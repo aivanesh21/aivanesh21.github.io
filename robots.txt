@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Answer engines are welcome to read and cite this site.
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://aivanesh21.github.io/sitemap.xml

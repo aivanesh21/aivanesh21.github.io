@@ -1,0 +1,21 @@
+{
+  "name": "Sawant & Kadrekar LLP",
+  "short_name": "Sawant & Kadrekar",
+  "description": "Sawant & Kadrekar LLP is a firm of Chartered Accountants established in 1986, offering audit and assurance, direct and indirect tax, capital markets and SME IPO advisory, a dedicated BFSI practice and technology solutions. Offices across Mumbai, Navi Mumbai, Thane and Pune.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/assets/img/favicon/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/img/favicon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
