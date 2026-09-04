@@ -910,7 +910,12 @@ a:hover { color: var(--link-hover); }
 /* Below the tab-label breakpoint the bars carry it alone. The label is hidden the
    accessible way, so each tab keeps its name. */
 @media (max-width: 760px) {
-  .hero--scroll .hero__dot { padding-right: .4rem; }
+  /* Hiding the label the accessible way takes it out of flow, which collapsed the button
+     to the height of its 2px bar — a 45x2 tap target. The bar stays pinned to the top of
+     the box while padding below restores a real target. */
+  .hero--scroll .hero__dot {
+    padding: 0 .4rem 0 0; min-height: 32px; align-content: start;
+  }
   .hero--scroll .hero__dotlabel {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
@@ -1735,13 +1740,18 @@ code {
   margin-top: 2rem;
 }
 .partner-dot {
-  width: 10px; height: 10px; border-radius: 50%; border: 0;
-  background: var(--line-strong); cursor: pointer;
-  transition: all var(--dur) var(--ease); padding: 0;
+  /* The visible dot stays 10px; the button is padded out to a 24px target and
+     `background-clip: content-box` keeps the paint inside the old bounds. A 10x10
+     control is under half the minimum touch target. */
+  width: 24px; height: 24px; box-sizing: border-box; padding: 7px;
+  border: 0; border-radius: 50%; background: var(--line-strong);
+  background-clip: content-box; cursor: pointer;
+  transition: background var(--dur) var(--ease), width var(--dur) var(--ease);
 }
-.partner-dot:hover { background: var(--brand-blue); }
+.partner-dot:hover { background: var(--brand-blue); background-clip: content-box; }
 .partner-dot--active {
-  background: var(--brand-blue); width: 28px; border-radius: 999px;
+  background: var(--brand-blue); background-clip: content-box;
+  width: 42px; border-radius: 999px;
 }
 
 /* --- Tags & Badges ------------------------------------------------------ */
@@ -2191,7 +2201,10 @@ code {
   display: flex; gap: .5rem; flex-wrap: wrap;
 }
 .test-card__stars {
-  color: #FFB800; font-size: 1.25rem; letter-spacing: .15em;
+  /* #FFB800 measured 1.73:1 on white. At 20px regular this is body text under WCAG, so
+     it needs 4.5:1 — #8F6200 gives 5.36:1 on white and 4.86:1 on the tint, and still
+     reads as gold rather than brown. */
+  color: #8F6200; font-size: 1.25rem; letter-spacing: .15em;
 }
 .test-card__quote {
   position: relative; font-family: var(--serif); font-size: clamp(1.15rem, 2vw, 1.45rem);
