@@ -1,7 +1,7 @@
 /* GSTR-1 Converter — Web Worker wrapper around engine.js.
    Keeps the parsed source and the last result in memory so settings can be re-applied quickly. */
 /* global GSTR1, importScripts */
-if (typeof GSTR1 === 'undefined') importScripts('../vendor/fflate-0.8.2.min.js', 'engine.js?v=3');
+if (typeof GSTR1 === 'undefined') importScripts('../vendor/fflate-0.8.2.min.js', 'engine.js?v=4');
 
 var src = null, res = null;
 

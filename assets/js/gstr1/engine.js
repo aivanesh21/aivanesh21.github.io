@@ -433,7 +433,9 @@
       jsonVersion: 'GST3.2.3',
       unregGstins: [],         // recipient GSTINs to report as unregistered (e.g. cancelled registrations)
       hsnMap: {},              // { wrongHsn: correctHsn } corrections applied before aggregation
-      invalidHsn: []           // HSN codes the portal rejected (from an error report) — flagged until corrected
+      invalidHsn: [],          // HSN codes the portal rejected (from an error report) — flagged until corrected
+      alreadyFiled: [],        // [{kind:'I'|'N', no, period}] documents the portal says were filed earlier (RET191123)
+      amendFiled: false        // true: report those as amendments (B2BA / CDNRA …); false: leave them out
     };
   }
 
@@ -497,10 +499,11 @@
     (opt.unregGstins || []).forEach(function (g) { g = str(g).toUpperCase(); if (g) unreg[g] = 1; });
     Object.keys(opt.hsnMap || {}).forEach(function (k) { var v = str(opt.hsnMap[k]).replace(/\s/g, ''); if (/^\d{4,8}$/.test(v)) hsnMap[str(k)] = v; });
     (opt.invalidHsn || []).forEach(function (h) { invalidHsn[str(h)] = 1; });
+    var filed = {};
+    (opt.alreadyFiled || []).forEach(function (f) { if (f && f.no) filed[(f.kind === 'I' ? 'I' : 'N') + '|' + str(f.no)] = f.period || ''; });
 
     // ---- group lines into documents
     var docs = {}, order = [];
-    var amendRows = 0;
     src.lines.forEach(function (L) {
       var kind = docKind(L.docType);
       if (!kind) { issues.add('error', 'doctype', 'Unrecognised Document Type Code — row skipped', 'Row ' + L._row + ': ' + str(L.docType)); return; }
@@ -510,15 +513,16 @@
       var dt = isNote ? L.noteDate : L.invDate;
       if (!no && (kind === 'ADV' || kind === 'ADJ')) no = '(adv-row-' + L._row + ')';
       if (!no) { issues.add('error', 'nodocno', 'Document number missing — row skipped', 'Row ' + L._row); return; }
-      if (L.origInvNo || L.origNoteNo) amendRows++;
-      var key = kind + '|' + no;
+      var origNo = str(isNote ? L.origNoteNo : L.origInvNo);
+      var key = kind + (origNo ? 'A' : '') + '|' + no;
       var d = docs[key];
       if (!d) {
         d = docs[key] = { kind: kind, no: no, date: dt, gstin: str(L.gstin).toUpperCase().replace(/\s/g, ''), name: str(L.name),
           posRaw: str(L.pos), pos: stateCode(L.pos), lines: [], valGiven: null, cancelled: false,
           rchrg: yes(L.rchrg) ? 'Y' : 'N', invTypeRaw: str(L.invType), urType: str(L.urType).toUpperCase(),
           expType: expTypeCode(L.expType), portCode: str(L.portCode), sbNum: str(L.sbNum), sbDate: L.sbDate,
-          etin: str(L.etin).toUpperCase(), diffPct: num(L.diffPct), firstRow: L._row };
+          etin: str(L.etin).toUpperCase(), diffPct: num(L.diffPct), firstRow: L._row,
+          amend: !!origNo, origNo: origNo, origDate: isNote ? L.origNoteDate : L.origInvDate };
         order.push(key);
       } else {
         if ((d.gstin !== str(L.gstin).toUpperCase().replace(/\s/g, '')) || d.pos !== stateCode(L.pos) || dateKey(d.date) !== dateKey(dt))
@@ -528,24 +532,25 @@
       if (L.val != null && isNumLike(L.val)) d.valGiven = num(L.val);
       d.lines.push(L);
     });
-    if (amendRows) issues.add('warn', 'amend', 'Amendment columns are filled on ' + amendRows + ' line(s). Amendment tables (B2BA, CDNRA, etc.) are not generated — enter those directly in the offline tool.', '');
 
     // ---- period detection
     var monthCount = {};
-    order.forEach(function (k) { var d = docs[k].date; if (d) { var p = pad2(d.m) + d.y; monthCount[p] = (monthCount[p] || 0) + 1; } });
+    order.forEach(function (k) { if (docs[k].amend) return; var d = docs[k].date; if (d) { var p = pad2(d.m) + d.y; monthCount[p] = (monthCount[p] || 0) + 1; } });
     var detectedPeriod = Object.keys(monthCount).sort(function (a, b) { return monthCount[b] - monthCount[a]; })[0] || '';
     var period = opt.period || detectedPeriod;
 
     // ---- outputs
     var out = {
       b2b: [], b2cl: [], exp: [], cdnr: [], cdnur: [],
+      b2ba: [], b2cla: [], expa: [], cdnra: [], cdnura: [],
       b2cs: {}, at: {}, atadj: {},
       nil: { INTRB2B: [0, 0, 0], INTRAB2B: [0, 0, 0], INTRB2C: [0, 0, 0], INTRAB2C: [0, 0, 0] },
       hsn: { b2b: {}, b2c: {} },
       series: {}
     };
     var src_tot = { INV: newAmt(), CN: newAmt(), DN: newAmt(), ADV: newAmt(), ADJ: newAmt() };
-    var stats = { lines: src.lines.length, docs: order.length, byKind: { INV: 0, CN: 0, DN: 0, ADV: 0, ADJ: 0 }, cancelled: 0, zeroLines: 0 };
+    var stats = { lines: src.lines.length, docs: order.length, byKind: { INV: 0, CN: 0, DN: 0, ADV: 0, ADJ: 0 }, cancelled: 0, zeroLines: 0, amendments: 0 };
+    var periodKey = period ? +period.slice(2) * 100 + +period.slice(0, 2) : 0;
     var invNumbers = {}, noteNumbers = {};
 
     order.forEach(function (key) {
@@ -553,11 +558,33 @@
       stats.byKind[d.kind]++;
       var ref = (d.kind === 'INV' ? 'Inv ' : d.kind === 'CN' ? 'CN ' : d.kind === 'DN' ? 'DN ' : 'Adv ') + d.no;
 
-      // Table 13 series registration (before cancellation check)
-      if (d.kind === 'INV' || d.kind === 'CN' || d.kind === 'DN' || (d.kind === 'ADV' && d.no.charAt(0) !== '(')) {
+      var fk = (d.kind === 'INV' ? 'I' : (d.kind === 'CN' || d.kind === 'DN') ? 'N' : 'x') + '|' + d.no;
+      if (!d.amend && fk in filed) {
+        var fp = filed[fk] ? ' (filed in ' + filed[fk].slice(0, 2) + '/' + filed[fk].slice(2) + ')' : '';
+        if (opt.amendFiled) {
+          d.amend = true; d.origNo = d.no; d.origDate = d.date;
+          issues.add('info', 'filedamend', 'Already filed in an earlier GSTR-1 (per the portal error report) — reported as an amendment with the same number and date', ref + fp);
+        } else {
+          issues.add('warn', 'filedskip', 'Already filed in an earlier GSTR-1 (per the portal error report) — left out. To change the filed details instead, tick "Report already-filed documents as amendments" under Corrections.', ref + fp);
+          return;
+        }
+      }
+      if (d.amend) {
+        stats.amendments++;
+        if (!d.origDate) issues.add('error', 'amendnodate', 'Amendment without a readable original document date', ref);
+        else if (periodKey) {
+          var ok = d.origDate.y * 100 + d.origDate.m;
+          var fyEnd = d.origDate.m >= 4 ? d.origDate.y + 1 : d.origDate.y;
+          if (ok >= periodKey) issues.add('error', 'amendsame', 'Original document is in this return period or later — correct it in the original table instead of amending', ref + ' (original ' + dMonY(d.origDate) + ')');
+          else if (periodKey > fyEnd * 100 + 11) issues.add('error', 'amendlate', 'Amendment is time-barred: documents of FY ' + (fyEnd - 1) + '-' + String(fyEnd).slice(2) + ' can be amended only up to the November ' + fyEnd + ' return', ref + ' (original ' + dMonY(d.origDate) + ')');
+        }
+      }
+
+      // Table 13 series registration (before cancellation check) — amendments are not newly issued documents
+      if (!d.amend && (d.kind === 'INV' || d.kind === 'CN' || d.kind === 'DN' || (d.kind === 'ADV' && d.no.charAt(0) !== '('))) {
         registerSeries(out.series, d.kind === 'ADV' ? 'RV' : d.kind, d.no, d.cancelled);
       }
-      if (d.kind === 'INV') invNumbers[d.no] = 1; else if (d.kind === 'CN' || d.kind === 'DN') noteNumbers[d.no] = 1;
+      if (!d.amend) { if (d.kind === 'INV') invNumbers[d.no] = 1; else if (d.kind === 'CN' || d.kind === 'DN') noteNumbers[d.no] = 1; }
       if (d.cancelled) { stats.cancelled++; return; }
 
       // --- document-level validation
@@ -566,7 +593,7 @@
         if (!/^[A-Za-z0-9\/-]+$/.test(d.no)) issues.add('error', 'docnochars', 'Document number has characters other than letters, digits, "/" and "-"', ref);
         if (/^0+$/.test(d.no.replace(/[\/-]/g, ''))) issues.add('error', 'docnozero', 'Document number cannot be all zeros', ref);
         if (!d.date) issues.add('error', 'nodate', 'Document date missing or unreadable', ref);
-        else if (period && pad2(d.date.m) + d.date.y !== period) {
+        else if (period && pad2(d.date.m) + d.date.y !== period && !(d.amend && d.date.y * 100 + d.date.m < periodKey)) {
           var pk = +period.slice(2) * 100 + +period.slice(0, 2), dk = d.date.y * 100 + d.date.m;
           if (dk > pk) issues.add('error', 'futuredate', 'Document dated after the return period', ref + ' (' + dMonY(d.date) + ')');
           else if (d.kind === 'INV') issues.add('warn', 'olddate', 'Invoice dated before the return period (allowed, but check it was not reported earlier)', ref + ' (' + dMonY(d.date) + ')');
@@ -637,10 +664,12 @@
         var tax = noPay || gt ? 0 : tx * rate * diff / 100;
         var amt = { txval: tx, iamt: igst ? tax : 0, camt: igst ? 0 : tax / 2, samt: igst ? 0 : tax / 2, csamt: cess };
         computedVal += tx + tax + cess;
-        if (src_tot[d.kind]) addAmt(src_tot[d.kind], amt);
+        if (src_tot[d.kind] && !d.amend) addAmt(src_tot[d.kind], amt);
 
         // HSN summary (all outward supplies, net of notes; advances excluded; Non-GST excluded)
-        if (sect !== 'AT' && sect !== 'ATADJ' && gt !== 'NONGST') {
+        if (d.amend) {
+          if (hsn || tx) issues.add('info', 'amendhsn', 'Amended documents are not added to the HSN summary (Table 12 needs only the change in value, which the export does not give). If an amendment changes value, adjust this period\'s HSN rows for the difference.', ref);
+        } else if (sect !== 'AT' && sect !== 'ATADJ' && gt !== 'NONGST') {
           if (!hsn) issues.add('error', 'hsnmissing', 'HSN/SAC missing — line left out of the HSN summary', ref);
           else {
             if (!/^\d{4}(\d{2}(\d{2})?)?$/.test(hsn)) issues.add('warn', 'hsnlen', 'HSN/SAC should be 4, 6 or 8 digits (6 digits minimum when turnover exceeds ₹5 crore)', ref + ': ' + hsn);
@@ -686,6 +715,16 @@
       }
 
       if (sect === 'B2CL?') sect = (val > opt.b2clLimit) ? 'B2CL' : 'B2CS';
+      if (d.amend) {
+        var AM = { B2B: 'B2BA', B2CL: 'B2CLA', EXP: 'EXPA', CDNR: 'CDNRA', CDNUR: 'CDNURA' };
+        if (!AM[sect]) {
+          issues.add('error', 'amendb2cs', sect === 'B2CS'
+            ? 'Amendment of a B2C (small) supply — this is reported in B2CSA as revised totals per original month, place of supply and rate, which cannot be derived from single documents. Enter it in the offline tool; left out here.'
+            : 'Amendment of advances (ATA / ATADJA) is not generated — enter it in the offline tool; left out here.', ref);
+          return;
+        }
+        sect = AM[sect];
+      }
 
       var rec = { d: d, val: val, items: itemList, it: itCode };
       switch (sect) {
@@ -695,6 +734,13 @@
           if (!d.portCode || !d.sbNum) issues.add('info', 'sbmissing', 'Export invoice without port code / shipping bill — can be added later by amendment', ref);
           break;
         case 'CDNR': out.cdnr.push(rec); break;
+        case 'B2BA': out.b2ba.push(rec); break;
+        case 'B2CLA': out.b2cla.push(rec); break;
+        case 'EXPA': out.expa.push(rec); break;
+        case 'CDNRA': out.cdnra.push(rec); break;
+        case 'CDNURA':
+          rec.urType = d.expType ? (d.expType === 'WPAY' ? 'EXPWP' : 'EXPWOP') : (d.urType || 'B2CL');
+          out.cdnura.push(rec); break;
         case 'CDNUR':
           rec.urType = d.expType ? (d.expType === 'WPAY' ? 'EXPWP' : 'EXPWOP') : (d.urType || 'B2CL');
           if (rec.urType === 'B2CL' && d.pos === home) issues.add('error', 'cdnurintra', 'UR Type B2CL is only for inter-state notes — this note is intra-state', ref);
@@ -747,6 +793,7 @@
       options: opt, home: home, period: period, detectedPeriod: detectedPeriod, source: { sheet: src.sheet, headerRow: src.headerRow, columns: src.columns },
       stats: stats, sourceTotals: src_tot,
       b2b: out.b2b, b2cl: out.b2cl, exp: out.exp, cdnr: out.cdnr, cdnur: out.cdnur,
+      b2ba: out.b2ba, b2cla: out.b2cla, expa: out.expa, cdnra: out.cdnra, cdnura: out.cdnura,
       b2cs: b2csList, at: atList, atadj: atadjList, nil: out.nil,
       hsn: hsnOut, docs: docRows, issues: null
     };
@@ -855,6 +902,14 @@
     ];
     var net = newAmt();
     rows.forEach(function (r) { addAmt(net, r.amt, r.negate ? -1 : 1); });
+    // Amendments carry the revised full values of earlier-period documents: shown, never added to the net.
+    [['b2ba', 'B2B amendments — Table 9A', 'b2ba'], ['b2cla', 'B2C Large amendments — Table 9A', 'b2cla'], ['expa', 'Export amendments — Table 9A', 'expa'],
+     ['cdnra', 'Amended credit / debit notes (registered) — Table 9C', 'cdnra'], ['cdnura', 'Amended credit / debit notes (unregistered) — Table 9C', 'cdnura']].forEach(function (a) {
+      var list = res[a[0]];
+      if (!list.length) return;
+      var isNote = a[0] === 'cdnra' || a[0] === 'cdnura';
+      rows.push({ key: a[0], label: a[1], sheet: a[2], docs: list.length, amend: true, signed: isNote, amt: round(sumItems(list, isNote ? noteSign : null)) });
+    });
     var hb = newAmt(), hc = newAmt();
     res.hsn.b2b.forEach(function (h) { addAmt(hb, h); });
     res.hsn.b2c.forEach(function (h) { addAmt(hc, h); });
@@ -971,6 +1026,57 @@
       return o;
     });
 
+    // ---- amendments (Table 9A / 9C): original number + date, then the revised document in full
+    function amendHead(r) { return { oinum: r.d.origNo, oidt: dmy(r.d.origDate), inum: r.d.no, idt: dmy(r.d.date), val: r2(r.val) }; }
+    if (res.b2ba.length) j.b2ba = partyGroup(res.b2ba, function (r) {
+      var inter = isInter(r, home), it = INV_TYPES[r.it];
+      var o = amendHead(r);
+      o.pos = r.d.pos; o.rchrg = r.d.rchrg; o.inv_typ = it.json || r.it;
+      if (r.d.etin) o.etin = r.d.etin;
+      if (r.d.diffPct) o.diff_percent = r.d.diffPct / 100;
+      o.itms = r.items.map(function (i, n) { return itmDet(i, inter, true, n + 1); });
+      return o;
+    }).map(function (g) { return { ctin: g.ctin, inv: g.list }; });
+    if (res.b2cla.length) {
+      var byPosA = {}, posOrderA = [];
+      res.b2cla.forEach(function (r) {
+        if (!byPosA[r.d.pos]) { byPosA[r.d.pos] = []; posOrderA.push(r.d.pos); }
+        var o = amendHead(r);
+        if (r.d.etin) o.etin = r.d.etin;
+        if (r.d.diffPct) o.diff_percent = r.d.diffPct / 100;
+        o.itms = r.items.map(function (i, n) { return { num: n + 1, itm_det: { rt: i.rate, txval: r2(i.txval), iamt: r2(i.iamt), csamt: r2(i.csamt) } }; });
+        byPosA[r.d.pos].push(o);
+      });
+      j.b2cla = posOrderA.map(function (p) { return { pos: p, inv: byPosA[p] }; });
+    }
+    if (res.expa.length) {
+      var byTA = { WPAY: [], WOPAY: [] };
+      res.expa.forEach(function (r) {
+        var o = amendHead(r);
+        if (r.d.portCode) o.sbpcode = r.d.portCode;
+        if (r.d.sbNum) o.sbnum = r.d.sbNum;
+        if (r.d.sbDate) o.sbdt = dmy(r.d.sbDate);
+        if (r.d.diffPct) o.diff_percent = r.d.diffPct / 100;
+        o.itms = r.items.map(function (i) { return { txval: r2(i.txval), rt: i.rate, iamt: r2(i.iamt), csamt: r2(i.csamt) }; });
+        byTA[r.d.expType === 'WPAY' ? 'WPAY' : 'WOPAY'].push(o);
+      });
+      j.expa = ['WPAY', 'WOPAY'].filter(function (t) { return byTA[t].length; }).map(function (t) { return { exp_typ: t, inv: byTA[t] }; });
+    }
+    if (res.cdnra.length) j.cdnra = partyGroup(res.cdnra, function (r) {
+      var inter = isInter(r, home), it = INV_TYPES[r.it];
+      var o = { ont_num: r.d.origNo, ont_dt: dmy(r.d.origDate), ntty: r.d.kind === 'CN' ? 'C' : 'D', nt_num: r.d.no, nt_dt: dmy(r.d.date), val: r2(r.val), pos: r.d.pos, rchrg: r.d.rchrg, inv_typ: it.json || r.it };
+      if (r.d.diffPct) o.diff_percent = r.d.diffPct / 100;
+      o.itms = r.items.map(function (i, n) { return itmDet(i, inter, true, n + 1); });
+      return o;
+    }).map(function (g) { return { ctin: g.ctin, nt: g.list }; });
+    if (res.cdnura.length) j.cdnura = res.cdnura.map(function (r) {
+      var o = { typ: r.urType, ont_num: r.d.origNo, ont_dt: dmy(r.d.origDate), ntty: r.d.kind === 'CN' ? 'C' : 'D', nt_num: r.d.no, nt_dt: dmy(r.d.date), val: r2(r.val) };
+      if (r.urType === 'B2CL') o.pos = r.d.pos;
+      if (r.d.diffPct) o.diff_percent = r.d.diffPct / 100;
+      o.itms = r.items.map(function (i, n) { return { num: n + 1, itm_det: { rt: i.rate, txval: r2(i.txval), iamt: r2(i.iamt), csamt: r2(i.csamt) } }; });
+      return o;
+    });
+
     var nilRows = EXEMP_ROWS.map(function (e) { var v = res.nil[e[0]]; return { sply_ty: e[0], nil_amt: r2(v[0]), expt_amt: r2(v[1]), ngsup_amt: r2(v[2]) }; });
     if (nilRows.some(function (n) { return n.nil_amt || n.expt_amt || n.ngsup_amt; })) j.nil = { inv: nilRows };
 
@@ -1027,7 +1133,7 @@
     ['b2cs', 'nil', 'hsn', 'doc_issue', 'at', 'txpd'].forEach(function (k) { if (j[k]) { cur[k] = j[k]; } });
     curSize = JSON.stringify(cur).length;
     function push() { parts.push(cur); cur = Object.assign({}, head); curSize = JSON.stringify(cur).length; }
-    ['b2b', 'cdnr', 'b2cl', 'exp', 'cdnur'].forEach(function (k) {
+    ['b2b', 'cdnr', 'b2cl', 'exp', 'cdnur', 'b2ba', 'cdnra', 'b2cla', 'expa', 'cdnura'].forEach(function (k) {
       if (!j[k]) return;
       j[k].forEach(function (grp) {
         var sz = JSON.stringify(grp).length + 1;
@@ -1208,6 +1314,28 @@
       S[p[0]] = [distinct(p[1], 0), null, null, null, sumCol(p[1], 4), null, sumCol(p[1], 6), sumCol(p[1], 7), sumCol(p[1], 8), sumCol(p[1], 9), sumCol(p[1], 10)];
     });
 
+    // amendments
+    var b2ba = [];
+    res.b2ba.forEach(function (r) { r.items.forEach(function (i) {
+      b2ba.push([r.d.gstin, r.d.name, r.d.origNo, r.d.origDate, r.d.no, r.d.date, r2(r.val), posLabel(r.d.pos), r.d.rchrg, pd(r), INV_TYPES[r.it].label, r.d.etin, i.rate, r2(i.txval), r2(i.csamt)]); }); });
+    R.b2ba = b2ba; S.b2ba = [distinct(b2ba, 0), null, distinct(b2ba, 2), null, null, null, distinctVal(b2ba, 2, 6), null, null, null, null, null, null, sumCol(b2ba, 13), sumCol(b2ba, 14)];
+    var b2cla = [];
+    res.b2cla.forEach(function (r) { r.items.forEach(function (i) {
+      b2cla.push([r.d.origNo, r.d.origDate, posLabel(r.d.pos), r.d.no, r.d.date, r2(r.val), pd(r), i.rate, r2(i.txval), r2(i.csamt), r.d.etin]); }); });
+    R.b2cla = b2cla; S.b2cla = [distinct(b2cla, 0), null, null, null, null, distinctVal(b2cla, 0, 5), null, null, sumCol(b2cla, 8), sumCol(b2cla, 9)];
+    var expa = [];
+    res.expa.forEach(function (r) { r.items.forEach(function (i) {
+      expa.push([r.d.expType, r.d.origNo, r.d.origDate, r.d.no, r.d.date, r2(r.val), r.d.portCode, r.d.sbNum, r.d.sbDate || '', i.rate, r2(i.txval), r2(i.csamt)]); }); });
+    R.expa = expa; S.expa = [null, distinct(expa, 1), null, null, null, distinctVal(expa, 1, 5), null, distinct(expa, 7), null, null, sumCol(expa, 10), sumCol(expa, 11)];
+    var cdnra = [];
+    res.cdnra.forEach(function (r) { r.items.forEach(function (i) {
+      cdnra.push([r.d.gstin, r.d.name, r.d.origNo, r.d.origDate, r.d.no, r.d.date, r.d.kind === 'CN' ? 'C' : 'D', posLabel(r.d.pos), r.d.rchrg, INV_TYPES[r.it].label, r2(r.val), pd(r), i.rate, r2(i.txval), r2(i.csamt)]); }); });
+    R.cdnra = cdnra; S.cdnra = [distinct(cdnra, 0), null, distinct(cdnra, 2), null, null, null, null, null, null, null, distinctVal(cdnra, 2, 10), null, null, sumCol(cdnra, 13), sumCol(cdnra, 14)];
+    var cdnura = [];
+    res.cdnura.forEach(function (r) { r.items.forEach(function (i) {
+      cdnura.push([r.urType, r.d.origNo, r.d.origDate, r.d.no, r.d.date, r.d.kind === 'CN' ? 'C' : 'D', r.urType === 'B2CL' ? posLabel(r.d.pos) : '', r2(r.val), pd(r), i.rate, r2(i.txval), r2(i.csamt)]); }); });
+    R.cdnura = cdnura; S.cdnura = [null, distinct(cdnura, 1), null, null, null, null, null, distinctVal(cdnura, 1, 7), null, null, sumCol(cdnura, 10), sumCol(cdnura, 11)];
+
     var docs = res.docs.map(function (d) { return [d.natureLabel, d.from, d.to, d.total, d.cancel]; });
     R.docs = docs; S.docs = [null, null, null, docs.reduce(function (s, r) { return s + r[3]; }, 0), docs.reduce(function (s, r) { return s + r[4]; }, 0)];
     return { rows: R, sums: S };
@@ -1225,7 +1353,12 @@
     exemp: [6, 7, 7, 7],
     'hsn(b2b)': [6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7],
     'hsn(b2c)': [6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7],
-    docs: [6, 6, 6, 9, 9]
+    docs: [6, 6, 6, 9, 9],
+    b2ba: [6, 6, 6, null, 6, null, 7, 6, 6, 7, 6, 6, 7, 7, 7],
+    b2cla: [6, null, 6, 6, null, 7, 7, 7, 7, 7, 6],
+    expa: [6, 6, null, 6, null, 7, 6, 6, null, 7, 7, 7],
+    cdnra: [6, 6, 6, null, 6, null, 6, 6, 6, 6, 7, 7, 7, 7, 7],
+    cdnura: [6, 6, null, 6, null, 6, 6, 7, 7, 7, 7, 7]
   };
 
   function buildExcel(res) {
@@ -1288,7 +1421,7 @@
     } else text = decode(u8);
     var j = JSON.parse(text);
     var er = j.error_report || j;
-    var out = { gstin: j.gstin || '', fp: j.fp || '', cancelled: [], invalidHsn: [], zeroDocs: [], other: [], total: 0 };
+    var out = { gstin: j.gstin || '', fp: j.fp || '', cancelled: [], invalidHsn: [], zeroDocs: [], alreadyFiled: [], other: [], total: 0 };
     var seen = {};
     function push(arr, v) { if (v && !seen[arr + v]) { seen[arr + v] = 1; out[arr].push(v); } }
     Object.keys(er).forEach(function (sec) {
@@ -1299,6 +1432,12 @@
         if (cd === 'RET191360' || /gstin.*cancel/i.test(msg)) push('cancelled', e.ctin);
         else if (cd === 'RET191349' || /hsn.*not valid/i.test(msg)) {
           ['hsn_b2b', 'hsn_b2c', 'data'].forEach(function (t) { (e[t] || []).forEach(function (h) { push('invalidHsn', h.hsn_sc); }); });
+        } else if (cd === 'RET191123' || /already exist/i.test(msg)) {
+          var pm = /return period (\d{6})/i.exec(msg);
+          (e.nt || e.inv || []).forEach(function (n) {
+            var no = n.nt_num || n.inum;
+            if (no && !seen['F' + no]) { seen['F' + no] = 1; out.alreadyFiled.push({ kind: n.nt_num ? 'N' : 'I', no: no, period: pm ? pm[1] : '' }); }
+          });
         } else if (cd === 'RET191239' || /zero value/i.test(msg)) {
           (e.nt || e.inv || []).forEach(function (n) { push('zeroDocs', n.nt_num || n.inum); });
         } else {

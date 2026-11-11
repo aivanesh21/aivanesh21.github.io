@@ -711,6 +711,7 @@
   .g1-rules td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap !important; }
   #g1-status:empty { display: none; }
   #g1-err-sum:empty { display: none; }
+  .g1-subhead th { background: var(--warn-bg); color: var(--warn-ink); font-weight: 600; font-size: .8125rem; border-top: 1px solid var(--warn-line); }
   .g1-filebtn { position: relative; cursor: pointer; }
   .g1-filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
   .g1-corr-grid { display: grid; gap: 0 1.5rem; margin-top: 1.25rem; }
@@ -745,7 +746,7 @@
   </section>
 
   <section class="section--tight" style="padding-bottom:clamp(3rem,6vw,5rem)">
-    <div class="wrap" id="g1" data-worker="/assets/js/gstr1/worker.js?v=3">
+    <div class="wrap" id="g1" data-worker="/assets/js/gstr1/worker.js?v=4">
 
       <div style="max-width:880px;margin-bottom:clamp(1.5rem,3vw,2.25rem)"><div class="callout" role="note">
         <p class="callout__title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Your data stays on your computer</p>
@@ -823,6 +824,7 @@
                 <span class="field__help" id="g1-unreg-help">One per line. For registrations the portal reports as cancelled (RET191360): those sales move to B2CS / B2CL and their HSN to the B2C table.</span>
               </div>
             </div>
+            <label class="check"><input type="checkbox" id="g1-amendfiled"><span><strong>Report already-filed documents as amendments</strong> <span class="g1-muted" id="g1-filed-n"></span> — documents the portal rejected as “already exist in GSTR1 … for the return period” (RET191123) go to B2BA / CDNRA with the same number and date, replacing what was filed. Unticked, they are left out. Rows with the Original Invoice / Note columns filled are always treated as amendments.</span></label>
             <button class="btn btn--ghost btn--sm" type="button" id="g1-corr-clear">Clear corrections</button>
           </details>
         </div>
@@ -882,7 +884,7 @@
       <div style="margin-top:clamp(2rem,4vw,3rem);max-width:880px">
         <div class="callout callout--warning" role="note">
           <p class="callout__title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> A preparation aid, not a filing</p>
-          <p>The converter applies the reporting rules below to the data exactly as exported. It does not decide classification, rates, place of supply or whether a supply is taxable. Import the Excel into the GSTN offline tool (or upload the JSON) and review the portal summary before you file. Amendment tables (B2BA, CDNRA, B2CSA …) are not generated.</p>
+          <p>The converter applies the reporting rules below to the data exactly as exported. It does not decide classification, rates, place of supply or whether a supply is taxable. Import the Excel into the GSTN offline tool (or upload the JSON) and review the portal summary before you file. Amendments of B2C small supplies (B2CSA) and of advances (ATA / ATADJA) are not generated.</p>
         </div>
       </div>
     </div>
@@ -904,6 +906,7 @@
           <tr><td>9B · <code>cdnur</code></td><td>Notes to unregistered persons only where UR Type is B2CL, EXPWP or EXPWOP.</td></tr>
           <tr><td>11A / 11B · <code>at</code>, <code>atadj</code></td><td>Document types Advance and Advance Adjustment, by place of supply and rate.</td></tr>
           <tr><td>12 · <code>hsn(b2b)</code>, <code>hsn(b2c)</code></td><td>Every invoice and note line (excluding advances and Non-GST), credit notes negative, one row per HSN + rate (other units merged into the main UQC; a negative net quantity is reported as 0). Supplies to registered persons (B2B + CDNR) go to the B2B tab; unregistered (B2CL, B2CS, exports, CDNUR) to the B2C tab. Tax is computed per line (IGST if inter-state, else CGST + SGST). Services (SAC 99…) carry UQC “NA” with zero quantity.</td></tr>
+          <tr><td>9A / 9C · <code>b2ba</code>, <code>b2cla</code>, <code>expa</code>, <code>cdnra</code>, <code>cdnura</code></td><td>Rows with the <em>Original Invoice</em> or <em>Original Credit/Debit Note</em> number filled are amendments of documents filed in an earlier period. They go to the amendment table matching where the document belongs, with the original number and date followed by the revised details in full. They are not counted in Table 13, not added to the HSN summary, and do not set the return period. The original must be from an earlier period, and amendments are allowed only up to the November return after the end of that financial year. B2C (small) amendments need B2CSA totals and are flagged instead.</td></tr>
           <tr><td>13 · <code>docs</code></td><td>Each document number is split into prefix + running number; each series is reported with the lowest and highest number, the count of documents issued and the number cancelled. Invoices, credit notes and debit notes are reported separately.</td></tr>
         </tbody>
       </table></div>
@@ -925,7 +928,7 @@
     </div>
   </section>
 
-  <script src="/assets/js/gstr1/ui.js?v=3" defer></script>
+  <script src="/assets/js/gstr1/ui.js?v=4" defer></script>
 </main>
 <footer class="ftr">
     <div class="wrap">

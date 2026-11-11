@@ -51,7 +51,7 @@
   var fLimit = $('g1-limit'), fZero = $('g1-zero'), fQty = $('g1-qty'), fMerge = $('g1-merge'), fGaps = $('g1-gaps'), fDesc = $('g1-desc'), fVer = $('g1-ver');
   var out = $('g1-out');
   var fErr = $('g1-err'), fHsnMap = $('g1-hsnmap'), fUnreg = $('g1-unreg'), errSum = $('g1-err-sum'), hsnHelp = $('g1-hsnhelp');
-  var invalidHsn = [];
+  var invalidHsn = [], alreadyFiled = [], fAmendFiled = $('g1-amendfiled');
   var fileName = '', loaded = false, lastView = null;
 
   fState.innerHTML = '<option value="">Select state…</option>' + STATES.map(function (s) { return '<option value="' + s[0] + '">' + s[0] + ' – ' + esc(s[1]) + '</option>'; }).join('');
@@ -90,7 +90,8 @@
       b2clLimit: +fLimit.value || 100000,
       zeroRateAsNil: fZero.checked, reduceQtyOnCN: fQty.checked, mergeNoteUnits: fMerge.checked,
       gapsAsCancelled: fGaps.checked, hsnDesc: fDesc.checked, jsonVersion: fVer.value.trim() || 'GST3.2.3',
-      hsnMap: parseHsnMap(), unregGstins: parseUnreg(), invalidHsn: invalidHsn
+      hsnMap: parseHsnMap(), unregGstins: parseUnreg(), invalidHsn: invalidHsn,
+      alreadyFiled: alreadyFiled, amendFiled: fAmendFiled.checked
     };
   }
 
@@ -108,13 +109,15 @@
     return fUnreg.value.toUpperCase().split(/[\s,;]+/).filter(function (g) { return /^[0-9A-Z]{15}$/.test(g); });
   }
   function saveCorr() {
-    try { localStorage.setItem(STORE, JSON.stringify({ hsnmap: fHsnMap.value, unreg: fUnreg.value, invalid: invalidHsn })); } catch (e) { /* storage unavailable */ }
+    try { localStorage.setItem(STORE, JSON.stringify({ hsnmap: fHsnMap.value, unreg: fUnreg.value, invalid: invalidHsn, filed: alreadyFiled, amendFiled: fAmendFiled.checked })); } catch (e) { /* storage unavailable */ }
+    $('g1-filed-n').textContent = alreadyFiled.length ? '(' + fmtInt.format(alreadyFiled.length) + ' from error reports)' : '';
     updateCorrBadge();
   }
   function loadCorr() {
     try {
       var c = JSON.parse(localStorage.getItem(STORE) || 'null');
-      if (c) { fHsnMap.value = c.hsnmap || ''; fUnreg.value = c.unreg || ''; invalidHsn = c.invalid || []; }
+      if (c) { fHsnMap.value = c.hsnmap || ''; fUnreg.value = c.unreg || ''; invalidHsn = c.invalid || []; alreadyFiled = c.filed || []; fAmendFiled.checked = !!c.amendFiled; }
+      $('g1-filed-n').textContent = alreadyFiled.length ? '(' + fmtInt.format(alreadyFiled.length) + ' from error reports)' : '';
     } catch (e) { /* ignore */ }
     updateCorrBadge();
   }
@@ -158,11 +161,15 @@
       var rep = r.report;
       var nU = addLines(fUnreg, rep.cancelled);
       rep.invalidHsn.forEach(function (h) { if (invalidHsn.indexOf(h) < 0) invalidHsn.push(h); });
+      var haveF = {}; alreadyFiled.forEach(function (f) { haveF[f.kind + f.no] = 1; });
+      rep.alreadyFiled.forEach(function (f) { if (!haveF[f.kind + f.no]) alreadyFiled.push(f); });
       var parts = [];
       parts.push('<strong>Error report loaded</strong> (' + fmtInt.format(rep.total) + ' rejected records' + (rep.fp ? ', period ' + esc(rep.fp.slice(0, 2) + '/' + rep.fp.slice(2)) : '') + ').');
       if (rep.cancelled.length) parts.push(rep.cancelled.length + ' cancelled GSTIN' + (rep.cancelled.length > 1 ? 's' : '') + ' → now reported as B2C' + (nU < rep.cancelled.length ? ' (' + (rep.cancelled.length - nU) + ' already listed)' : '') + '.');
       if (rep.zeroDocs.length) parts.push(rep.zeroDocs.length + ' zero-value document' + (rep.zeroDocs.length > 1 ? 's' : '') + ' → left out automatically (still counted in Table 13).');
       if (rep.invalidHsn.length) parts.push(rep.invalidHsn.length + ' invalid HSN code' + (rep.invalidHsn.length > 1 ? 's' : '') + ' → enter the correct code for each in the table below.');
+      if (rep.alreadyFiled.length) parts.push(rep.alreadyFiled.length + ' document' + (rep.alreadyFiled.length > 1 ? 's were' : ' was') + ' already filed in an earlier GSTR-1 → ' +
+        (fAmendFiled.checked ? 'reported as amendments (B2BA / CDNRA).' : 'rows that carry the Original Invoice / Credit Note columns are amended (B2BA / CDNRA); any others are left out. To amend those too, tick “Report already-filed documents as amendments” below.'));
       rep.other.forEach(function (o) { parts.push('Not handled automatically — ' + esc(o.section) + ' ' + esc(o.code) + ': ' + esc(o.msg) + (o.refs.length ? ' (' + o.refs.slice(0, 5).map(esc).join(', ') + ')' : '')); });
       errSum.setAttribute('data-state', rep.invalidHsn.length || rep.other.length ? 'info' : 'ok');
       errSum.innerHTML = parts.join('<br>');
@@ -173,8 +180,9 @@
     fErr.value = '';
   });
   [fHsnMap, fUnreg].forEach(function (ta) { ta.addEventListener('change', function () { saveCorr(); renderHsnHelp(); schedule(); }); });
+  fAmendFiled.addEventListener('change', function () { saveCorr(); schedule(); });
   $('g1-corr-clear').addEventListener('click', function () {
-    fHsnMap.value = ''; fUnreg.value = ''; invalidHsn = []; errSum.innerHTML = ''; errSum.removeAttribute('data-state');
+    fHsnMap.value = ''; fUnreg.value = ''; invalidHsn = []; alreadyFiled = []; fAmendFiled.checked = false; errSum.innerHTML = ''; errSum.removeAttribute('data-state');
     saveCorr(); renderHsnHelp(); schedule();
   });
   loadCorr();
@@ -183,6 +191,7 @@
   function handleFile(file) {
     if (!file) return;
     fileName = file.name;
+    firstRun = true;
     loaded = false;
     out.hidden = true;
     setStatus('info', '<span class="g1-spin" aria-hidden="true"></span> Reading <strong>' + esc(file.name) + '</strong> (' + (file.size / 1048576).toFixed(1) + ' MB)…');
@@ -214,17 +223,20 @@
     setStatus('info', '<span class="g1-spin" aria-hidden="true"></span> Segregating documents and preparing summaries…');
     return call('build', { opt: opt }).then(function (r) {
       var v = r.view;
-      if (first && firstRun && v.period) {
+      if (first && firstRun) {
+        // period comes from original documents only; an amendment-only file keeps the period chosen above
         firstRun = false;
-        fMonth.value = v.period.slice(0, 2); fYear.value = v.period.slice(2);
+        if (v.detectedPeriod) { fMonth.value = v.detectedPeriod.slice(0, 2); fYear.value = v.detectedPeriod.slice(2); }
         return run(false);
       }
       lastView = v;
       render(v);
       var errs = v.issues.filter(function (i) { return i.level === 'error'; }).reduce(function (s, i) { return s + i.count; }, 0);
-      setStatus(errs ? 'err' : 'ok', errs
+      setStatus(errs ? 'err' : 'ok', (errs
         ? '<strong>Converted with ' + fmtInt.format(errs) + ' error' + (errs > 1 ? 's' : '') + '.</strong> Review the checks below before filing — the offline tool or portal will reject these rows.'
-        : '<strong>Converted.</strong> ' + fmtInt.format(v.stats.docs) + ' documents segregated. Review the summary and checks, then download.');
+        : '<strong>Converted.</strong> ' + fmtInt.format(v.stats.docs) + ' documents segregated. Review the summary and checks, then download.') +
+        (v.stats.amendments ? '<br>' + fmtInt.format(v.stats.amendments) + ' amendment' + (v.stats.amendments > 1 ? 's' : '') + ' of earlier periods found' +
+          (v.stats.amendments === v.stats.docs ? ' — this is an amendment-only file, so the return period was <strong>not</strong> taken from the document dates. Make sure it is the month you are filing (step 2).' : '.') : ''));
       out.hidden = false;
     }).catch(function (err) { setStatus('err', '<strong>Conversion failed.</strong> ' + esc(err.message)); });
   }
@@ -245,7 +257,7 @@
     var tax = S.net.iamt + S.net.camt + S.net.samt;
     $('g1-period-label').textContent = MONTHS[+v.period.slice(0, 2) - 1] + ' ' + v.period.slice(2);
     $('g1-k-docs').textContent = fmtInt.format(v.stats.docs);
-    $('g1-k-docs-sub').textContent = fmtInt.format(v.stats.byKind.INV) + ' invoices · ' + fmtInt.format(v.stats.byKind.CN) + ' credit · ' + fmtInt.format(v.stats.byKind.DN) + ' debit notes';
+    $('g1-k-docs-sub').textContent = fmtInt.format(v.stats.byKind.INV) + ' invoices · ' + fmtInt.format(v.stats.byKind.CN) + ' credit · ' + fmtInt.format(v.stats.byKind.DN) + ' debit notes' + (v.stats.amendments ? ' · ' + fmtInt.format(v.stats.amendments) + ' amendments' : '');
     $('g1-k-tx').textContent = '₹' + money(S.net.txval);
     $('g1-k-tax').textContent = '₹' + money(tax);
     $('g1-k-tax-sub').textContent = 'IGST ' + money(S.net.iamt) + ' · CGST ' + money(S.net.camt) + ' · SGST ' + money(S.net.samt);
@@ -256,12 +268,15 @@
     $('g1-k-chk-sub').textContent = fmtInt.format(warns) + ' warnings to review';
 
     // sections
-    var rows = S.rows.map(function (r) {
+    function secRow(r) {
       var docs = r.docs == null ? '—' : fmtInt.format(r.docs) + (r.rowsLabel ? ' rows' : '');
       var empty = !r.docs && !r.amt.txval;
       return '<tr' + (empty ? ' class="g1-dim"' : '') + '><th scope="row">' + esc(r.label) + '<span class="g1-sheet">' + esc(r.sheet) + '</span></th><td class="num">' + docs + '</td>' + amtCells(r.amt) + '</tr>';
-    }).join('');
+    }
+    var rows = S.rows.filter(function (r) { return !r.amend; }).map(secRow).join('');
     rows += '<tr class="g1-total"><th scope="row">Net outward supplies</th><td></td>' + amtCells(S.net) + '</tr>';
+    var am = S.rows.filter(function (r) { return r.amend; });
+    if (am.length) rows += '<tr class="g1-subhead"><th scope="rowgroup" colspan="7">Amendments of earlier periods — revised values of documents already filed; not added to the net</th></tr>' + am.map(secRow).join('');
     $('g1-sections').innerHTML = rows;
 
     // reconciliation
