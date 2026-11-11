@@ -427,9 +427,9 @@
       b2clLimit: 100000,       // invoice value above which inter-state B2C invoices go to B2CL
       zeroRateAsNil: false,    // 0% lines without an explicit Item GST Type -> Table 8 (nil rated)
       reduceQtyOnCN: true,     // credit notes reduce HSN quantity
-      mergeNoteUnits: true,    // fold credit-note rows in a different UQC into the sales row (same HSN + rate)
+      mergeNoteUnits: true,    // one row per HSN + rate: fold rows booked in other UQCs into the main unit
       gapsAsCancelled: false,  // Table 13: numbers missing inside a series are treated as cancelled
-      hsnDescInJson: false,
+      hsnDesc: false,          // fill HSN description from item descriptions (otherwise left for the GSTN HSN master)
       jsonVersion: 'GST3.2.3'
     };
   }
@@ -744,8 +744,9 @@
     return res;
   }
 
-  /* A credit note booked in a different unit (e.g. NOS) from the sale (PCS) would otherwise
-     create a separate negative HSN row. Fold such rows into the main row of the same HSN + rate. */
+  /* One row per HSN + rate. Rows of the same HSN and rate booked in different units (e.g. sales in
+     PCS, credit notes in NOS) are folded into the main unit — the one carrying the largest value —
+     because the offline tool / portal reject an HSN repeated with several UQCs. */
   function mergeUnits(map, issues) {
     var groups = {};
     Object.keys(map).forEach(function (k) { var h = map[k]; var g = h.hsn + '|' + h.rate; (groups[g] = groups[g] || []).push(k); });
@@ -753,16 +754,18 @@
       var keys = groups[g];
       if (keys.length < 2) return;
       var main = null;
-      keys.forEach(function (k) { if (!main || map[k].amt.txval > map[main].amt.txval) main = k; });
-      if (map[main].amt.txval <= 0) return;
+      keys.forEach(function (k) {
+        if (!main) { main = k; return; }
+        var a = map[k].amt.txval, b = map[main].amt.txval;
+        if ((a > 0 && b <= 0) || ((a > 0) === (b > 0) && Math.abs(a) > Math.abs(b))) main = k;
+      });
+      var m = map[main];
       keys.forEach(function (k) {
         if (k === main) return;
         var h = map[k];
-        if (h.amt.txval >= 0 && h.qty >= 0) return;
-        var m = map[main];
         addAmt(m.amt, h.amt); m.qty += h.qty;
         for (var ds in h.descs) m.descs[ds] = (m.descs[ds] || 0) + h.descs[ds];
-        issues.add('info', 'hsnmerge', 'Credit-note lines booked in a different unit were merged into the sales unit of the same HSN and rate', h.hsn + ' @ ' + h.rate + '%: ' + (h.uqc || 'NA') + ' → ' + (m.uqc || 'NA'));
+        issues.add('info', 'hsnmerge', 'Same HSN and rate booked in more than one unit — quantities merged into one UQC (one row per HSN + rate)', h.hsn + ' @ ' + h.rate + '%: ' + (h.uqc || 'NA') + ' → ' + (m.uqc || 'NA'));
         delete map[k];
       });
     });
@@ -777,7 +780,10 @@
       var row = { hsn: h.hsn, desc: desc.replace(/\s+/g, ' ').trim(), uqc: h.uqc, qty: Math.round(h.qty * 100) / 100, rate: h.rate,
         txval: r2(h.amt.txval), iamt: r2(h.amt.iamt), camt: r2(h.amt.camt), samt: r2(h.amt.samt), csamt: r2(h.amt.csamt) };
       if (row.txval < 0) issues.add('warn', 'hsnneg', 'HSN ' + label + ' row is negative — credit notes for this HSN/rate exceed this month\'s sales (typically returns of earlier months). Check the offline tool accepts it, or net it against another period.', h.hsn + ' @ ' + h.rate + '%: ' + row.txval);
-      if (row.qty < 0) issues.add('warn', 'hsnnegqty', 'HSN ' + label + ' quantity is negative after credit notes', h.hsn + ' ' + row.uqc + ': ' + row.qty);
+      if (row.qty < 0) {
+        issues.add('info', 'hsnnegqty', 'HSN ' + label + ' net quantity was negative after credit notes — reported as 0 (the offline tool rejects negative quantity)', h.hsn + ' ' + row.uqc + ': ' + row.qty);
+        row.qty = 0;
+      }
       return row;
     }).filter(function (r) { return r.txval !== 0 || r.qty !== 0 || r.csamt !== 0; })
       .sort(function (a, b) { return a.hsn.localeCompare(b.hsn) || a.rate - b.rate || a.uqc.localeCompare(b.uqc); });
@@ -974,7 +980,7 @@
     function hsnJson(list) {
       return list.map(function (h, n) {
         var o = { num: n + 1, hsn_sc: h.hsn };
-        if (opt.hsnDescInJson && h.desc) o.desc = h.desc.slice(0, 30);
+        if (opt.hsnDesc && h.desc) o.desc = h.desc.slice(0, 30);
         o.uqc = h.uqc ? h.uqc.split('-')[0] : 'NA';
         o.qty = h.uqc ? h.qty : 0;
         o.rt = h.rate; o.txval = h.txval; o.iamt = h.iamt; o.camt = h.camt; o.samt = h.samt; o.csamt = h.csamt;
@@ -1181,7 +1187,7 @@
 
     function hsnRows(list) {
       return list.map(function (h) {
-        return [h.hsn, h.desc.slice(0, 30), h.uqc, h.uqc ? h.qty : '', r2(h.txval + h.iamt + h.camt + h.samt + h.csamt), h.rate, h.txval, h.iamt, h.camt, h.samt, h.csamt];
+        return [h.hsn, res.options.hsnDesc ? h.desc.slice(0, 30) : '', h.uqc, h.uqc ? h.qty : '', r2(h.txval + h.iamt + h.camt + h.samt + h.csamt), h.rate, h.txval, h.iamt, h.camt, h.samt, h.csamt];
       });
     }
     var hb = hsnRows(res.hsn.b2b), hc = hsnRows(res.hsn.b2c);

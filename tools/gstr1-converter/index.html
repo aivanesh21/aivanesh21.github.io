@@ -734,7 +734,7 @@
   </section>
 
   <section class="section--tight" style="padding-bottom:clamp(3rem,6vw,5rem)">
-    <div class="wrap" id="g1" data-worker="/assets/js/gstr1/worker.js?v=1">
+    <div class="wrap" id="g1" data-worker="/assets/js/gstr1/worker.js?v=2">
 
       <div style="max-width:880px;margin-bottom:clamp(1.5rem,3vw,2.25rem)"><div class="callout" role="note">
         <p class="callout__title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Your data stays on your computer</p>
@@ -786,11 +786,11 @@
           <details class="g1-adv">
             <summary>Treatment options</summary>
             <div class="g1-opts">
-              <label class="check"><input type="checkbox" id="g1-merge" checked><span><strong>Merge credit-note units into the sales unit</strong> — when a note for the same HSN and rate was booked in another UQC (e.g. NOS vs PCS), fold it into the sales row instead of creating a separate negative HSN row.</span></label>
-              <label class="check"><input type="checkbox" id="g1-qty" checked><span><strong>Credit notes reduce HSN quantity</strong> — net quantity of returns. Untick for value-only notes (discounts, price differences).</span></label>
+              <label class="check"><input type="checkbox" id="g1-merge" checked><span><strong>One row per HSN and rate</strong> — where the same HSN and rate was booked in more than one UQC (e.g. sales in PCS, credit notes in NOS), merge the quantities into the main unit. The offline tool rejects an HSN repeated with different UQCs.</span></label>
+              <label class="check"><input type="checkbox" id="g1-qty" checked><span><strong>Credit notes reduce HSN quantity</strong> — net quantity of returns. Untick for value-only notes (discounts, price differences). A net quantity below zero is always reported as 0.</span></label>
               <label class="check"><input type="checkbox" id="g1-zero"><span><strong>Report 0% invoice lines as Nil rated (Table 8)</strong> when the Item GST Type column is blank. Otherwise they stay in B2B / B2C at a 0% rate.</span></label>
               <label class="check"><input type="checkbox" id="g1-gaps"><span><strong>Treat missing numbers in a series as cancelled</strong> in the document summary. Leave off when a series is shared with credit notes or other branches.</span></label>
-              <label class="check"><input type="checkbox" id="g1-desc"><span><strong>Include HSN description in JSON</strong> (from the item description; the portal otherwise takes it from its HSN master).</span></label>
+              <label class="check"><input type="checkbox" id="g1-desc"><span><strong>Fill HSN description from item descriptions</strong> (Excel and JSON). Leave off: the offline tool and portal take the description from the GSTN HSN master.</span></label>
               <div class="field" style="margin-top:.25rem"><label class="field__label" for="g1-ver">JSON version tag</label><input class="input" id="g1-ver" value="GST3.2.3" style="max-width:220px"></div>
             </div>
           </details>
@@ -821,7 +821,7 @@
           </table></div>
 
           <h3 class="g1-h">HSN summary (Table 12)</h3>
-          <p class="g1-p">Prepared line by line from every invoice and note, net of credit notes, grouped by HSN + UQC + rate, and split into B2B (registered recipients) and B2C (unregistered, B2CL, exports). It must tie to the sections:</p>
+          <p class="g1-p">Prepared line by line from every invoice and note, net of credit notes, one row per HSN + rate, and split into B2B (registered recipients) and B2C (unregistered, B2CL, exports). It must tie to the sections:</p>
           <div class="table-scroll g1-tbl" style="margin-bottom:1rem"><table class="data">
             <thead><tr><th scope="col">Check</th><th class="num" scope="col">Sections</th><th class="num" scope="col">HSN table</th><th class="num" scope="col">Difference</th></tr></thead>
             <tbody id="g1-recon"></tbody>
@@ -872,7 +872,7 @@
           <tr><td>9B · <code>cdnr</code></td><td>Credit and debit notes with a GSTIN (note type C / D), one row per note per rate.</td></tr>
           <tr><td>9B · <code>cdnur</code></td><td>Notes to unregistered persons only where UR Type is B2CL, EXPWP or EXPWOP.</td></tr>
           <tr><td>11A / 11B · <code>at</code>, <code>atadj</code></td><td>Document types Advance and Advance Adjustment, by place of supply and rate.</td></tr>
-          <tr><td>12 · <code>hsn(b2b)</code>, <code>hsn(b2c)</code></td><td>Every invoice and note line (excluding advances and Non-GST), credit notes negative, grouped by HSN + UQC + rate. Supplies to registered persons (B2B + CDNR) go to the B2B tab; unregistered (B2CL, B2CS, exports, CDNUR) to the B2C tab. Tax is computed per line (IGST if inter-state, else CGST + SGST). Services (SAC 99…) carry UQC “NA” with zero quantity.</td></tr>
+          <tr><td>12 · <code>hsn(b2b)</code>, <code>hsn(b2c)</code></td><td>Every invoice and note line (excluding advances and Non-GST), credit notes negative, one row per HSN + rate (other units merged into the main UQC; a negative net quantity is reported as 0). Supplies to registered persons (B2B + CDNR) go to the B2B tab; unregistered (B2CL, B2CS, exports, CDNUR) to the B2C tab. Tax is computed per line (IGST if inter-state, else CGST + SGST). Services (SAC 99…) carry UQC “NA” with zero quantity.</td></tr>
           <tr><td>13 · <code>docs</code></td><td>Each document number is split into prefix + running number; each series is reported with the lowest and highest number, the count of documents issued and the number cancelled. Invoices, credit notes and debit notes are reported separately.</td></tr>
         </tbody>
       </table></div>
@@ -894,7 +894,7 @@
     </div>
   </section>
 
-  <script src="/assets/js/gstr1/ui.js?v=1" defer></script>
+  <script src="/assets/js/gstr1/ui.js?v=2" defer></script>
 </main>
 <footer class="ftr">
     <div class="wrap">

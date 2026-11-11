@@ -87,7 +87,7 @@
       period: fMonth.value + fYear.value,
       b2clLimit: +fLimit.value || 100000,
       zeroRateAsNil: fZero.checked, reduceQtyOnCN: fQty.checked, mergeNoteUnits: fMerge.checked,
-      gapsAsCancelled: fGaps.checked, hsnDescInJson: fDesc.checked, jsonVersion: fVer.value.trim() || 'GST3.2.3'
+      gapsAsCancelled: fGaps.checked, hsnDesc: fDesc.checked, jsonVersion: fVer.value.trim() || 'GST3.2.3'
     };
   }
 
