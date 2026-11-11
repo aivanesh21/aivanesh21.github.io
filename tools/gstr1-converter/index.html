@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GSTR-1 Converter | Sawant &amp; Kadrekar LLP</title>
+<meta name="description" content="Convert a Munim sales and credit/debit note export into the GSTN GSTR-1 Excel workbook (offline tool template V2.1) or a portal-ready GSTR-1 JSON, with HSN and document summaries. Runs in your browser.">
+<link rel="canonical" href="https://aivanesh21.github.io/tools/gstr1-converter/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sawant &amp; Kadrekar LLP">
+<meta property="og:title" content="GSTR-1 Converter | Sawant &amp; Kadrekar LLP">
+<meta property="og:description" content="Convert a Munim sales and credit/debit note export into the GSTN GSTR-1 Excel workbook (offline tool template V2.1) or a portal-ready GSTR-1 JSON, with HSN and document summaries. Runs in your browser.">
+<meta property="og:url" content="https://aivanesh21.github.io/tools/gstr1-converter/">
+<meta property="og:image" content="https://aivanesh21.github.io/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_IN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GSTR-1 Converter | Sawant &amp; Kadrekar LLP">
+<meta name="twitter:description" content="Convert a Munim sales and credit/debit note export into the GSTN GSTR-1 Excel workbook (offline tool template V2.1) or a portal-ready GSTR-1 JSON, with HSN and document summaries. Runs in your browser.">
+<meta name="twitter:image" content="https://aivanesh21.github.io/assets/img/og-image.png">
+
+<link rel="icon" href="/assets/img/favicon/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon/icon-32.png">
+<link rel="apple-touch-icon" href="/assets/img/favicon/icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/css/site.css?v=28391e9ac9">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "AccountingService",
+      "@id": "https://aivanesh21.github.io/#organization",
+      "name": "Sawant \u0026 Kadrekar LLP",
+      "alternateName": "Sawant \u0026 Kadrekar",
+      "description": "Sawant \u0026 Kadrekar LLP is a firm of Chartered Accountants established in 1986, providing audit and assurance, taxation, regulatory and capital markets advisory, with a dedicated BFSI practice and an in-house technology solutions team.",
+      "url": "https://aivanesh21.github.io/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://aivanesh21.github.io/assets/img/logo-lockup.png"
+      },
+      "image": "https://aivanesh21.github.io/assets/img/og-image.png",
+      "areaServed": {
+        "@type": "Country",
+        "name": "India"
+      },
+      "knowsAbout": [
+        "Audit and assurance",
+        "Direct tax",
+        "Goods and Services Tax",
+        "Transaction advisory",
+        "Corporate and regulatory advisory",
+        "Risk and forensic advisory",
+        "IPO readiness",
+        "SME IPO advisory",
+        "Capital advisory",
+        "Bank statutory audit",
+        "Concurrent audit",
+        "Co-operative banking audit",
+        "NBFC advisory",
+        "Information systems audit",
+        "Process automation",
+        "ESG and BRSR reporting"
+      ],
+      "foundingDate": "1986-07-10",
+      "vatID": "27AALFS6420M1ZQ",
+      "taxID": "AALFS6420M",
+      "memberOf": {
+        "@type": "Organization",
+        "name": "SNK \u0026 Alliance",
+        "url": "https://snkalliance.com"
+      },
+      "location": [
+        {
+          "@type": "Place",
+          "name": "Sawant \u0026 Kadrekar — Mumbai",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Unit 12 \u0026 13, Radha Krishna Apartment, Building No. 2, 2nd Floor, Vachnalaya Marg, Dadar West",
+            "addressLocality": "Mumbai",
+            "addressRegion": "Maharashtra",
+            "postalCode": "400028",
+            "addressCountry": "IN"
+          }
+        },
+        {
+          "@type": "Place",
+          "name": "Sawant \u0026 Kadrekar — Virar",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "G-4, Sonal Apartment, Agashi Road, Opposite Petrol Pump, Virar West",
+            "addressLocality": "Virar",
+            "addressRegion": "Maharashtra",
+            "postalCode": "401303",
+            "addressCountry": "IN"
+          }
+        },
+        {
+          "@type": "Place",
+          "name": "Sawant \u0026 Kadrekar — Parel, Mumbai",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "2002, Merwanji CHS, Dr. Borges Road, Opposite KEM Hospital, Parel",
+            "addressLocality": "Mumbai",
+            "addressRegion": "Maharashtra",
+            "postalCode": "400012",
+            "addressCountry": "IN"
+          }
+        },
+        {
+          "@type": "Place",
+          "name": "Sawant \u0026 Kadrekar — Navi Mumbai",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "B-181 to 183, Central Facility Building, APMC, Sector 19, Vashi",
+            "addressLocality": "Navi Mumbai",
+            "addressRegion": "Maharashtra",
+            "postalCode": "400705",
+            "addressCountry": "IN"
+          }
+        },
+        {
+          "@type": "Place",
+          "name": "Sawant \u0026 Kadrekar — Thane",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "B-506, Ashtavinayak Sankul CHS, Gauri Pada Talav, Kalyan West",
+            "addressLocality": "Thane",
+            "addressRegion": "Maharashtra",
+            "postalCode": "421301",
+            "addressCountry": "IN"
+          }
+        },
+        {
+          "@type": "Place",
+          "name": "Sawant \u0026 Kadrekar — Pune",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "B-1002, Aristolia, Survey Number 201, DP Road, Sade Satra Nali, Hadapsar",
+            "addressLocality": "Pune",
+            "addressRegion": "Maharashtra",
+            "postalCode": "411028",
+            "addressCountry": "IN"
+          }
+        }
+      ],
+      "hasCredential": [
+        {
+          "@type": "EducationalOccupationalCredential",
+          "credentialCategory": "RBI Empanelment Category",
+          "name": "RBI Empanelment Category: Category I"
+        },
+        {
+          "@type": "EducationalOccupationalCredential",
+          "credentialCategory": "Peer Review",
+          "name": "Peer Review: Valid to 31 August 2027"
+        },
+        {
+          "@type": "EducationalOccupationalCredential",
+          "credentialCategory": "C\u0026AG Empanelment",
+          "name": "C\u0026AG Empanelment: Empanelled"
+        }
+      ],
+      "employee": {
+        "@type": "QuantitativeValue",
+        "value": 8,
+        "unitText": "partners"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "IN",
+        "streetAddress": "Unit 12 \u0026 13, Radha Krishna Apartment, Building No. 2, 2nd Floor, Vachnalaya Marg, Dadar West",
+        "addressLocality": "Mumbai",
+        "addressRegion": "Maharashtra",
+        "postalCode": "400028"
+      },
+      "telephone": "+91 80974 53593",
+      "email": "office@skcas.com"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://aivanesh21.github.io/#website",
+      "url": "https://aivanesh21.github.io/",
+      "name": "Sawant \u0026 Kadrekar LLP",
+      "publisher": {
+        "@id": "https://aivanesh21.github.io/#organization"
+      },
+      "inLanguage": "en-IN"
+    },
+    {
+      "@type": "WebApplication",
+      "name": "GSTR-1 Converter",
+      "description": "Convert a Munim sales and credit/debit note export into the GSTN GSTR-1 Excel workbook (offline tool template V2.1) or a portal-ready GSTR-1 JSON, with HSN and document summaries. Runs in your browser.",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I work backwards from a GST-inclusive price?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Switch to \"Strip GST from a total\". The taxable value is the total divided by one plus the rate, and the GST is the difference."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When does the tax split into CGST and SGST?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For an intra-state supply the tax is shared equally between the centre and the state. For an inter-state supply the whole amount is IGST. Determining which applies depends on the place of supply, which is a legal question rather than an arithmetic one."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://aivanesh21.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tools \u0026 Calculators",
+          "item": "https://aivanesh21.github.io/tools/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "GSTR-1 Converter",
+          "item": "https://aivanesh21.github.io/tools/gstr1-converter/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+<script>window.SK_CONFIG={"formsEndpoint":""};</script>
+<!-- No analytics configured. See analytics in content/site.json. -->
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="hdr" data-header>
+    <span class="hdr__band" aria-hidden="true"></span>
+    <div class="wrap hdr__bar">
+      <a class="hdr__logo" href="/" aria-label="Sawant &amp; Kadrekar LLP — home">
+        <picture>
+        <source type="image/webp" sizes="(min-width: 1100px) 300px, 250px"
+                srcset="/assets/img/logo-lockup-400.webp 400w, /assets/img/logo-lockup-600.webp 600w, /assets/img/logo-lockup-800.webp 800w, /assets/img/logo-lockup-1100.webp 1100w">
+        <img src="/assets/img/logo-lockup-800.png"
+             srcset="/assets/img/logo-lockup-800.png 800w, /assets/img/logo-lockup-1100.png 1100w"
+             sizes="(min-width: 1100px) 300px, 250px"
+             alt="Sawant & Kadrekar LLP, Chartered Accountants, a member firm of SNK & Alliance" width="800" height="181" fetchpriority="high">
+      </picture>
+      </a>
+      <nav class="nav" aria-label="Primary">
+          <div class="navitem" data-navitem>
+            <button class="navitem__btn" type="button" aria-expanded="false" aria-controls="nav-panel-0">
+              <span>About Us</span><span class="navitem__chev" aria-hidden="true"></span>
+            </button>
+            <div class="navpanel" id="nav-panel-0" data-navpanel hidden>
+              <div class="navpanel__inner">
+                <div class="navpanel__col">
+                  
+                  <a class="navpanel__link" href="/about/">
+                    <span class="navpanel__label">The Firm</span>
+                    <span class="navpanel__desc">Established 1986. Who we are and how we work</span>
+                  </a>
+                  <a class="navpanel__link" href="/partners/">
+                    <span class="navpanel__label">Our Partners</span>
+                    <span class="navpanel__desc">Eight partners, four decades of practice</span>
+                  </a>
+                  <a class="navpanel__link" href="/team/">
+                    <span class="navpanel__label">Our Team</span>
+                    <span class="navpanel__desc">Depth behind every engagement</span>
+                  </a>
+                  <a class="navpanel__link" href="/offices/">
+                    <span class="navpanel__label">Our Offices</span>
+                    <span class="navpanel__desc">Mumbai, Navi Mumbai, Thane, Virar and Pune</span>
+                  </a>
+                  <a class="navpanel__link" href="/careers/">
+                    <span class="navpanel__label">Careers</span>
+                    <span class="navpanel__desc">Openings and articleship</span>
+                  </a>
+                  
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          <div class="navitem" data-navitem>
+            <button class="navitem__btn" type="button" aria-expanded="false" aria-controls="nav-panel-1">
+              <span>What We Do</span><span class="navitem__chev" aria-hidden="true"></span>
+            </button>
+            <div class="navpanel navpanel--groups" id="nav-panel-1" data-navpanel hidden>
+              <div class="navpanel__inner">
+                <div class="navpanel__col">
+                  <a class="navpanel__heading" href="/services/assurance-tax-advisory/">
+                    <span class="navpanel__headingicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>Assurance, Tax &amp; Advisory
+                  </a>
+                  <a class="navpanel__link" href="/services/audit-assurance/">
+                    <span class="navpanel__label">Audit &amp; Assurance</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/direct-tax/">
+                    <span class="navpanel__label">Direct Tax</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/indirect-tax-gst/">
+                    <span class="navpanel__label">Indirect Tax &amp; GST</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/transfer-pricing/">
+                    <span class="navpanel__label">Transfer Pricing</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/accounting-compliance/">
+                    <span class="navpanel__label">Accounting &amp; Compliance</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/corporate-regulatory-advisory/">
+                    <span class="navpanel__label">Corporate &amp; Regulatory Advisory</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/risk-advisory/">
+                    <span class="navpanel__label">Risk &amp; Forensic Advisory</span>
+                    
+                  </a>
+                  
+                </div>
+                <div class="navpanel__col">
+                  <a class="navpanel__heading" href="/services/capital-advisory/">
+                    <span class="navpanel__headingicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3"/><path d="M15 10.5c2.9.3 6 1.5 6 3.5v3c0 1.7-2.7 3-6 3s-6-1.3-6-3v-2"/></svg></span>Capital Advisory
+                  </a>
+                  <a class="navpanel__link" href="/services/ipo-readiness/">
+                    <span class="navpanel__label">IPO Readiness</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/sme-ipo/">
+                    <span class="navpanel__label">SME IPO &amp; Fund Raising</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/capital-structuring/">
+                    <span class="navpanel__label">Capital Structuring &amp; Fund Raising</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/transaction-advisory/">
+                    <span class="navpanel__label">Transaction Advisory</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/valuation/">
+                    <span class="navpanel__label">Valuation</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/alternative-investment-funds/">
+                    <span class="navpanel__label">AIF Advisory &amp; Fund Services</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/portfolio-management-services/">
+                    <span class="navpanel__label">PMS Compliance &amp; Support</span>
+                    
+                  </a>
+                  
+                </div>
+                <div class="navpanel__col">
+                  <a class="navpanel__heading" href="/services/value-added-services/">
+                    <span class="navpanel__headingicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 7L8 4 2 10l4 4 2-2"/><path d="M13 7l3-3 6 6-4 4-2-2"/><path d="M8 12l3 3 2-2 3 3"/></svg></span>Value Added Services
+                  </a>
+                  <a class="navpanel__link" href="/services/virtual-cfo/">
+                    <span class="navpanel__label">CFO &amp; Virtual CFO Services</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/business-advisory/">
+                    <span class="navpanel__label">Business Advisory</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/esg-brsr/">
+                    <span class="navpanel__label">ESG &amp; BRSR Reporting</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/startup-advisory/">
+                    <span class="navpanel__label">Start-up &amp; Founder Advisory</span>
+                    
+                  </a>
+                  
+                </div>
+                <div class="navpanel__col">
+                  <a class="navpanel__heading" href="/services/staffing-supervision/">
+                    <span class="navpanel__headingicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg></span>Staffing &amp; Supervision
+                  </a>
+                  <a class="navpanel__link" href="/services/staffing-resources/">
+                    <span class="navpanel__label">Staffing &amp; Skilled Resources</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/supervision-services/">
+                    <span class="navpanel__label">Supervision Services</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/internal-audit-cosourcing/">
+                    <span class="navpanel__label">Internal Audit Co-sourcing</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/training-capability/">
+                    <span class="navpanel__label">Training &amp; Capability Building</span>
+                    
+                  </a>
+                  
+                </div>
+                <div class="navpanel__col">
+                  <a class="navpanel__heading" href="/services/banking-financial-services/">
+                    <span class="navpanel__headingicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg></span>BFSI Practice
+                  </a>
+                  <a class="navpanel__link" href="/services/bank-statutory-audit/">
+                    <span class="navpanel__label">Bank Statutory Audit</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/concurrent-audit/">
+                    <span class="navpanel__label">Concurrent Audit</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/bank-inspection-revenue/">
+                    <span class="navpanel__label">Revenue, Inspection &amp; Treasury Audit</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/cooperative-banking/">
+                    <span class="navpanel__label">Co-operative Banks &amp; Credit Societies</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/nbfc-advisory/">
+                    <span class="navpanel__label">NBFC Registration &amp; Compliance</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/kyc-aml-audit/">
+                    <span class="navpanel__label">KYC &amp; AML Audit</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/risk-based-internal-audit/">
+                    <span class="navpanel__label">Risk-Based Internal Audit</span>
+                    
+                  </a>
+                  <a class="navpanel__more" href="/services/banking-financial-services/">+4 more</a>
+                </div>
+                <div class="navpanel__col">
+                  <a class="navpanel__heading" href="/services/technology-solutions/">
+                    <span class="navpanel__headingicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg></span>Technology Solutions
+                  </a>
+                  <a class="navpanel__link" href="/services/process-automation/">
+                    <span class="navpanel__label">Process Automation</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/web-development/">
+                    <span class="navpanel__label">Website Development</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/mobile-applications/">
+                    <span class="navpanel__label">Mobile Applications</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/custom-software/">
+                    <span class="navpanel__label">Desktop &amp; Custom Applications</span>
+                    
+                  </a>
+                  <a class="navpanel__link" href="/services/technology-consulting/">
+                    <span class="navpanel__label">Technology Consulting</span>
+                    
+                  </a>
+                  
+                </div>
+              </div>
+              <a class="navpanel__all" href="/services/">All services</a>
+            </div>
+          </div>
+          <a href="/industries/"><span>Industries</span></a>
+          <div class="navitem" data-navitem>
+            <button class="navitem__btn" type="button" aria-expanded="false" aria-controls="nav-panel-3">
+              <span>Insights</span><span class="navitem__chev" aria-hidden="true"></span>
+            </button>
+            <div class="navpanel" id="nav-panel-3" data-navpanel hidden>
+              <div class="navpanel__inner">
+                <div class="navpanel__col">
+                  
+                  <a class="navpanel__link" href="/insights/">
+                    <span class="navpanel__label">All Insights</span>
+                    <span class="navpanel__desc">Tax, GST and regulatory updates</span>
+                  </a>
+                  <a class="navpanel__link" href="/events/">
+                    <span class="navpanel__label">Events</span>
+                    <span class="navpanel__desc">Seminars, workshops and occasions</span>
+                  </a>
+                  
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          <a href="/tools/" aria-current="page"><span>Tools &amp; Calculators</span></a>
+          <a href="/alumni/"><span>Alumni</span></a>
+          <a href="/contact/"><span>Contact Us</span></a>
+      </nav>
+      <div class="hdr__actions">
+        <a class="btn btn--sm hdr__cta" href="/contact/">Talk to Us</a>
+        <button class="burger" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu" data-burger>
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mnav" id="mobile-nav" data-open="false" data-mnav hidden>
+    <div class="wrap" style="padding-inline:0">
+      <div class="mnav__top">
+        <picture>
+        <source type="image/webp" sizes="(min-width: 1100px) 300px, 250px"
+                srcset="/assets/img/logo-lockup-400.webp 400w, /assets/img/logo-lockup-600.webp 600w, /assets/img/logo-lockup-800.webp 800w, /assets/img/logo-lockup-1100.webp 1100w">
+        <img class="mnav__logo" src="/assets/img/logo-lockup-800.png"
+             srcset="/assets/img/logo-lockup-800.png 800w, /assets/img/logo-lockup-1100.png 1100w"
+             sizes="(min-width: 1100px) 300px, 250px"
+             alt="Sawant & Kadrekar LLP, Chartered Accountants, a member firm of SNK & Alliance" width="800" height="181">
+      </picture>
+        <button class="burger" type="button" aria-expanded="true" aria-label="Close menu" data-burger-close>
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <nav aria-label="Mobile">
+        <ul class="mnav__list">
+            <li class="mnav__group">
+              <button class="mnav__btn" type="button" aria-expanded="false" aria-controls="mnav-panel-0">
+                About Us<span class="mnav__ind" aria-hidden="true"></span>
+              </button>
+              <div class="mnav__sub" id="mnav-panel-0" data-open="false">
+                <div>
+                  <a class="" href="/about/">The Firm</a>
+                  <a class="" href="/partners/">Our Partners</a>
+                  <a class="" href="/team/">Our Team</a>
+                  <a class="" href="/offices/">Our Offices</a>
+                  <a class="" href="/careers/">Careers</a>
+                  
+                </div>
+              </div>
+            </li>
+            <li class="mnav__group">
+              <button class="mnav__btn" type="button" aria-expanded="false" aria-controls="mnav-panel-1">
+                What We Do<span class="mnav__ind" aria-hidden="true"></span>
+              </button>
+              <div class="mnav__sub" id="mnav-panel-1" data-open="false">
+                <div>
+                  <a class="mnav__subheading" href="/services/assurance-tax-advisory/">Assurance, Tax &amp; Advisory</a>
+                  <a class="" href="/services/audit-assurance/">Audit &amp; Assurance</a>
+                  <a class="" href="/services/direct-tax/">Direct Tax</a>
+                  <a class="" href="/services/indirect-tax-gst/">Indirect Tax &amp; GST</a>
+                  <a class="" href="/services/transfer-pricing/">Transfer Pricing</a>
+                  <a class="" href="/services/accounting-compliance/">Accounting &amp; Compliance</a>
+                  <a class="" href="/services/corporate-regulatory-advisory/">Corporate &amp; Regulatory Advisory</a>
+                  <a class="" href="/services/risk-advisory/">Risk &amp; Forensic Advisory</a>
+                  <a class="mnav__subheading" href="/services/capital-advisory/">Capital Advisory</a>
+                  <a class="" href="/services/ipo-readiness/">IPO Readiness</a>
+                  <a class="" href="/services/sme-ipo/">SME IPO &amp; Fund Raising</a>
+                  <a class="" href="/services/capital-structuring/">Capital Structuring &amp; Fund Raising</a>
+                  <a class="" href="/services/transaction-advisory/">Transaction Advisory</a>
+                  <a class="" href="/services/valuation/">Valuation</a>
+                  <a class="" href="/services/alternative-investment-funds/">AIF Advisory &amp; Fund Services</a>
+                  <a class="" href="/services/portfolio-management-services/">PMS Compliance &amp; Support</a>
+                  <a class="mnav__subheading" href="/services/value-added-services/">Value Added Services</a>
+                  <a class="" href="/services/virtual-cfo/">CFO &amp; Virtual CFO Services</a>
+                  <a class="" href="/services/business-advisory/">Business Advisory</a>
+                  <a class="" href="/services/esg-brsr/">ESG &amp; BRSR Reporting</a>
+                  <a class="" href="/services/startup-advisory/">Start-up &amp; Founder Advisory</a>
+                  <a class="mnav__subheading" href="/services/staffing-supervision/">Staffing &amp; Supervision</a>
+                  <a class="" href="/services/staffing-resources/">Staffing &amp; Skilled Resources</a>
+                  <a class="" href="/services/supervision-services/">Supervision Services</a>
+                  <a class="" href="/services/internal-audit-cosourcing/">Internal Audit Co-sourcing</a>
+                  <a class="" href="/services/training-capability/">Training &amp; Capability Building</a>
+                  <a class="mnav__subheading" href="/services/banking-financial-services/">BFSI Practice</a>
+                  <a class="" href="/services/bank-statutory-audit/">Bank Statutory Audit</a>
+                  <a class="" href="/services/concurrent-audit/">Concurrent Audit</a>
+                  <a class="" href="/services/bank-inspection-revenue/">Revenue, Inspection &amp; Treasury Audit</a>
+                  <a class="" href="/services/cooperative-banking/">Co-operative Banks &amp; Credit Societies</a>
+                  <a class="" href="/services/nbfc-advisory/">NBFC Registration &amp; Compliance</a>
+                  <a class="" href="/services/kyc-aml-audit/">KYC &amp; AML Audit</a>
+                  <a class="" href="/services/risk-based-internal-audit/">Risk-Based Internal Audit</a>
+                  <a class="mnav__subheading" href="/services/technology-solutions/">Technology Solutions</a>
+                  <a class="" href="/services/process-automation/">Process Automation</a>
+                  <a class="" href="/services/web-development/">Website Development</a>
+                  <a class="" href="/services/mobile-applications/">Mobile Applications</a>
+                  <a class="" href="/services/custom-software/">Desktop &amp; Custom Applications</a>
+                  <a class="" href="/services/technology-consulting/">Technology Consulting</a>
+                  <a href="/services/">All services</a>
+                </div>
+              </div>
+            </li>
+            <li><a href="/industries/">Industries</a></li>
+            <li class="mnav__group">
+              <button class="mnav__btn" type="button" aria-expanded="false" aria-controls="mnav-panel-3">
+                Insights<span class="mnav__ind" aria-hidden="true"></span>
+              </button>
+              <div class="mnav__sub" id="mnav-panel-3" data-open="false">
+                <div>
+                  <a class="" href="/insights/">All Insights</a>
+                  <a class="" href="/events/">Events</a>
+                  
+                </div>
+              </div>
+            </li>
+            <li><a href="/tools/" aria-current="page">Tools &amp; Calculators</a></li>
+            <li><a href="/alumni/">Alumni</a></li>
+            <li><a href="/contact/">Contact Us</a></li>
+        </ul>
+      </nav>
+      <div class="mnav__foot">
+        <a class="btn btn--block" href="/contact/">Talk to Us</a>
+        <a class="btn btn--ghost btn--block" href="/insights/">Explore Our Insights</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap crumbs">
+    <nav aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href="/tools/">Tools &amp; Calculators</a></li>
+        <li><span aria-current="page">GST</span></li>
+      </ol>
+    </nav>
+  </div>
+<main id="main">
+<style>
+  .g1-steps { display: grid; gap: clamp(1.25rem, 2.6vw, 1.75rem); }
+  .g1-steps > *, .g1-step__head > div { min-width: 0; }
+  .g1-drop__hint, .g1-filemeta, .g1-step__sub { overflow-wrap: anywhere; }
+  .g1-step { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: clamp(1.25rem, 2.6vw, 2rem); }
+  .g1-step__head { display: flex; align-items: baseline; gap: .85rem; margin-bottom: 1.1rem; }
+  .g1-step__no { flex: none; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; background: var(--brand-blue); color: #fff; font-weight: 600; font-size: var(--step--1); transform: translateY(.3rem); }
+  .g1-step__title { font-family: var(--serif); font-size: var(--step-2); font-weight: 400; color: var(--ink); line-height: 1.2; }
+  .g1-step__sub { font-size: var(--step--1); color: var(--muted); margin-top: .2rem; }
+  .g1-drop { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; text-align: center; min-height: 168px; padding: 1.5rem; border: 1.5px dashed var(--line-strong); border-radius: var(--radius-lg); background: var(--paper-2); cursor: pointer; transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); }
+  .g1-drop:hover, .g1-drop.is-over { border-color: var(--brand-blue); background: #F1F6FC; }
+  .g1-drop.is-loaded { border-style: solid; border-color: #BFE3C8; background: var(--ok-bg); }
+  .g1-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .g1-drop:focus-within { outline: 2px solid var(--brand-blue); outline-offset: 2px; }
+  .g1-drop svg { width: 34px; height: 34px; color: var(--brand-blue); }
+  .g1-drop__main { font-weight: 600; color: var(--ink); }
+  .g1-drop__hint { font-size: var(--step--1); color: var(--muted); }
+  .g1-filemeta { font-size: var(--step--1); color: var(--ok); }
+  .g1-grid { display: grid; gap: 0 1.5rem; }
+  @media (min-width: 720px) { .g1-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1040px) { .g1-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .g1-period { display: grid; grid-template-columns: 1.4fr 1fr; gap: .5rem; }
+  .g1-opts { display: grid; gap: .1rem 1.5rem; margin-top: .5rem; }
+  @media (min-width: 720px) { .g1-opts { grid-template-columns: 1fr 1fr; } }
+  .g1-adv summary { cursor: pointer; font-size: var(--step--1); font-weight: 600; color: var(--link); margin-top: .25rem; }
+  .g1-adv[open] summary { margin-bottom: 1rem; }
+  .g1-spin { display: inline-block; width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -2px; margin-right: .35rem; animation: g1spin .8s linear infinite; }
+  @keyframes g1spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .g1-spin { animation: none; } }
+  .g1-kpis { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.5rem; }
+  @media (min-width: 720px) { .g1-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .g1-kpi { background: #fff; padding: 1.1rem 1.25rem; min-width: 0; }
+  .g1-kpi__l { font-size: var(--step--1); color: var(--muted); }
+  .g1-kpi__v { font-family: var(--serif); font-size: clamp(1.4rem, 1.9vw, 1.85rem); color: var(--ink); line-height: 1.15; margin-top: .25rem; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .g1-kpi__s { font-size: .8125rem; color: var(--muted); margin-top: .3rem; line-height: 1.45; }
+  .g1-good { color: var(--ok) !important; } .g1-bad { color: var(--err) !important; } .g1-neg { color: var(--err); } .g1-muted { color: var(--muted); }
+  .g1-dl { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+  .g1-dl .btn[disabled] { opacity: .6; cursor: progress; }
+  .g1-h { font-family: var(--serif); font-size: var(--step-1); font-weight: 400; color: var(--ink); margin: 2rem 0 .35rem; }
+  .g1-p { font-size: var(--step--1); color: var(--muted); margin-bottom: .85rem; max-width: 78ch; }
+  .g1-tbl--cap { max-height: 520px; overflow: auto; }
+  .g1-tbl table.data th, .g1-tbl table.data td { padding: .55rem .75rem; white-space: nowrap; }
+  .g1-tbl thead th { position: sticky; top: 0; z-index: 1; }
+  .g1-tbl tbody th { font-weight: 500; color: var(--ink); white-space: normal; min-width: 240px; }
+  .g1-sheet { display: block; font-size: .75rem; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 400; margin-top: .1rem; }
+  .g1-total th, .g1-total td { font-weight: 600; background: var(--paper-2); border-top: 1px solid var(--line-strong); }
+  .g1-dim th, .g1-dim td { color: var(--muted-2, #8696A7); }
+  .g1-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; }
+  .g1-desc { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+  .g1-tabs { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; margin-bottom: .75rem; }
+  .g1-tabs button { padding: .5rem 1rem; font-size: var(--step--1); font-weight: 600; background: #fff; color: var(--ink); border: 0; border-left: 1px solid var(--line-strong); cursor: pointer; }
+  .g1-tabs button:first-child { border-left: 0; }
+  .g1-tabs button[aria-selected="true"] { background: var(--brand-blue); color: #fff; }
+  .g1-issues { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+  .g1-issue { border: 1px solid var(--line); border-left-width: 3px; border-radius: var(--radius); background: #fff; font-size: var(--step--1); }
+  .g1-issue summary { display: flex; gap: .75rem; align-items: baseline; padding: .7rem .9rem; cursor: pointer; list-style: none; }
+  .g1-issue summary::-webkit-details-marker { display: none; }
+  .g1-issue--ok { padding: .7rem .9rem; border-left-color: var(--ok); }
+  .g1-issue--error { border-left-color: var(--err); } .g1-issue--warn { border-left-color: var(--brand-orange); } .g1-issue--info { border-left-color: var(--brand-blue); }
+  .g1-badge { flex: none; font-size: .6875rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: .15rem .45rem; border-radius: 2px; background: var(--paper-2); color: var(--ink); }
+  .g1-issue--error .g1-badge { background: var(--err-bg); color: var(--err); } .g1-issue--warn .g1-badge { background: var(--warn-bg); color: var(--warn-ink); } .g1-issue--ok .g1-badge { background: var(--ok-bg); color: var(--ok); }
+  .g1-issue__msg { flex: 1; color: var(--ink); line-height: 1.5; }
+  .g1-issue__n { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .g1-refs { padding: 0 .9rem .8rem; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .75rem; line-height: 1.7; overflow-wrap: anywhere; }
+  .g1-rules td, .g1-rules th { white-space: normal !important; }
+  .g1-rules td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap !important; }
+  #g1-status:empty { display: none; }
+</style>
+
+  <section class="section section--tight pagehead">
+    <div class="wrap pagehead__grid">
+      <div class="pagehead__text">
+        <p class="eyebrow">Tools &amp; Calculators</p>
+        <h1 class="h1">GSTR-1 Converter</h1>
+        <p class="lede" style="margin-top:1.25rem">Turn a Munim sales and credit/debit note export into the GSTN GSTR-1 Excel workbook (offline tool template V2.1) or a portal-ready JSON — segregated into B2B, B2CL, B2CS, exports and notes, with the HSN (B2B / B2C) and document summaries prepared for you.</p>
+      </div>
+      <div class="art art--light pagehead__visual" aria-hidden="true">
+    <svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid meet" focusable="false">
+    <g fill="none" stroke="#0047A3" stroke-opacity="0.264" stroke-width="1">
+      <rect x="40" y="40" width="120" height="170"/><path d="M40 75h120M40 110h120M40 145h120M40 180h120"/>
+      <rect x="240" y="40" width="120" height="76"/><rect x="240" y="134" width="120" height="76"/>
+    </g>
+    <path d="M168 125h56M212 113l12 12-12 12" fill="none" stroke="#FF830F" stroke-width="2"/>
+    <g fill="#0047A3" fill-opacity="0.165"><rect x="248" y="50" width="104" height="14"/><rect x="248" y="144" width="104" height="14"/></g>
+    <path d="M40 40h120" stroke="#0047A3" stroke-opacity="0.66" stroke-width="2"/>
+    </svg>
+  </div>
+    </div>
+  </section>
+
+  <section class="section--tight" style="padding-bottom:clamp(3rem,6vw,5rem)">
+    <div class="wrap" id="g1" data-worker="/assets/js/gstr1/worker.js?v=1">
+
+      <div style="max-width:880px;margin-bottom:clamp(1.5rem,3vw,2.25rem)"><div class="callout" role="note">
+        <p class="callout__title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Your data stays on your computer</p>
+        <p>The workbook is read and converted entirely inside your browser. Nothing is uploaded to us or to any server, so client sales data never leaves this machine.</p>
+        <p class="g1-p g1-offline" style="margin:.5rem 0 0">Prefer to work without an internet connection? <a href="/tools/gstr1-converter/gstr1-converter-offline.html" download>Download the offline version</a>: a single HTML file that runs the same converter when opened from your computer.</p>
+      </div></div>
+
+      <div class="g1-steps">
+        <div class="g1-step">
+          <div class="g1-step__head"><span class="g1-step__no">1</span><div><h2 class="g1-step__title">Upload the Munim export</h2><p class="g1-step__sub">The “Sales + CDN combine” workbook with the <em>GSTR-1 Detail</em> sheet (.xlsx or .csv).</p></div></div>
+          <label class="g1-drop" id="g1-drop">
+            <input type="file" id="g1-file" accept=".xlsx,.xlsm,.csv" aria-describedby="g1-filemeta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg>
+            <span class="g1-drop__main">Drop the file here, or click to choose</span>
+            <span class="g1-drop__hint">e.g. Munim_Sales_CDN_Combine_WC_Oct_26_MH.xlsx</span>
+            <span class="g1-filemeta" id="g1-filemeta"></span>
+          </label>
+          <div class="formstatus" id="g1-status" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="g1-step">
+          <div class="g1-step__head"><span class="g1-step__no">2</span><div><h2 class="g1-step__title">Confirm the return details</h2><p class="g1-step__sub">The period and supplier state are detected from the data and the file name — check them. Changes re-run the conversion instantly.</p></div></div>
+          <div class="g1-grid">
+            <div class="field">
+              <label class="field__label" for="g1-gstin">Supplier GSTIN <span class="field__req">(needed for JSON)</span></label>
+              <input class="input nums" id="g1-gstin" maxlength="15" autocomplete="off" spellcheck="false" placeholder="27AAAAA0000A1Z5" style="text-transform:uppercase" aria-describedby="g1-gstin-help g1-gstin-err">
+              <span class="field__help" id="g1-gstin-help">Your own GSTIN. It sets the home state.</span>
+              <span class="field__error" id="g1-gstin-err" data-show="false">GSTIN format or check digit is not valid.</span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="g1-state">Supplier state</label>
+              <select class="select" id="g1-state" aria-describedby="g1-state-help"></select>
+              <span class="field__help" id="g1-state-help">Decides intra-state (CGST + SGST) vs inter-state (IGST).</span>
+            </div>
+            <div class="field">
+              <span class="field__label" id="g1-period-l">Return period</span>
+              <div class="g1-period" role="group" aria-labelledby="g1-period-l">
+                <select class="select" id="g1-month" aria-label="Month"></select>
+                <input class="input nums" id="g1-year" type="number" min="2017" max="2099" aria-label="Year">
+              </div>
+              <span class="field__help">Documents dated after this month are flagged.</span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="g1-limit">B2CL invoice value limit (₹)</label>
+              <input class="input nums" id="g1-limit" type="number" min="0" step="1" value="100000" aria-describedby="g1-limit-help">
+              <span class="field__help" id="g1-limit-help">₹1 lakh from August 2024 (₹2.5 lakh before).</span>
+            </div>
+          </div>
+          <details class="g1-adv">
+            <summary>Treatment options</summary>
+            <div class="g1-opts">
+              <label class="check"><input type="checkbox" id="g1-merge" checked><span><strong>Merge credit-note units into the sales unit</strong> — when a note for the same HSN and rate was booked in another UQC (e.g. NOS vs PCS), fold it into the sales row instead of creating a separate negative HSN row.</span></label>
+              <label class="check"><input type="checkbox" id="g1-qty" checked><span><strong>Credit notes reduce HSN quantity</strong> — net quantity of returns. Untick for value-only notes (discounts, price differences).</span></label>
+              <label class="check"><input type="checkbox" id="g1-zero"><span><strong>Report 0% invoice lines as Nil rated (Table 8)</strong> when the Item GST Type column is blank. Otherwise they stay in B2B / B2C at a 0% rate.</span></label>
+              <label class="check"><input type="checkbox" id="g1-gaps"><span><strong>Treat missing numbers in a series as cancelled</strong> in the document summary. Leave off when a series is shared with credit notes or other branches.</span></label>
+              <label class="check"><input type="checkbox" id="g1-desc"><span><strong>Include HSN description in JSON</strong> (from the item description; the portal otherwise takes it from its HSN master).</span></label>
+              <div class="field" style="margin-top:.25rem"><label class="field__label" for="g1-ver">JSON version tag</label><input class="input" id="g1-ver" value="GST3.2.3" style="max-width:220px"></div>
+            </div>
+          </details>
+        </div>
+
+        <div class="g1-step" id="g1-out" hidden>
+          <div class="g1-step__head"><span class="g1-step__no">3</span><div><h2 class="g1-step__title">Review and download — <span id="g1-period-label"></span></h2><p class="g1-step__sub">Check the segregation, the HSN reconciliation and the validation notes before you file.</p></div></div>
+
+          <div class="g1-kpis">
+            <div class="g1-kpi"><p class="g1-kpi__l">Documents</p><p class="g1-kpi__v" id="g1-k-docs"></p><p class="g1-kpi__s" id="g1-k-docs-sub"></p></div>
+            <div class="g1-kpi"><p class="g1-kpi__l">Net taxable value</p><p class="g1-kpi__v" id="g1-k-tx"></p><p class="g1-kpi__s">Sales − credit notes + debit notes</p></div>
+            <div class="g1-kpi"><p class="g1-kpi__l">Net tax</p><p class="g1-kpi__v" id="g1-k-tax"></p><p class="g1-kpi__s" id="g1-k-tax-sub"></p></div>
+            <div class="g1-kpi"><p class="g1-kpi__l">Validation</p><p class="g1-kpi__v" id="g1-k-chk"></p><p class="g1-kpi__s" id="g1-k-chk-sub"></p></div>
+          </div>
+
+          <div class="g1-dl">
+            <button class="btn" type="button" id="g1-dl-xlsx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> GSTR-1 Excel (offline tool)</button>
+            <button class="btn" type="button" id="g1-dl-json"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> GSTR-1 JSON (portal upload)</button>
+            <button class="btn btn--ghost btn--sm" type="button" id="g1-dl-csv">Validation report (.csv)</button>
+          </div>
+          <p class="g1-p" id="g1-json-note" style="margin-top:.6rem" aria-live="polite"></p>
+
+          <h3 class="g1-h">How the data was segregated</h3>
+          <p class="g1-p">Each GSTR-1 table, with the worksheet it fills in the template. Credit notes are shown as negatives; figures in ₹.</p>
+          <div class="table-scroll g1-tbl"><table class="data">
+            <thead><tr><th scope="col">GSTR-1 table</th><th class="num" scope="col">Docs</th><th class="num" scope="col">Taxable value</th><th class="num" scope="col">IGST</th><th class="num" scope="col">CGST</th><th class="num" scope="col">SGST</th><th class="num" scope="col">Cess</th></tr></thead>
+            <tbody id="g1-sections"></tbody>
+          </table></div>
+
+          <h3 class="g1-h">HSN summary (Table 12)</h3>
+          <p class="g1-p">Prepared line by line from every invoice and note, net of credit notes, grouped by HSN + UQC + rate, and split into B2B (registered recipients) and B2C (unregistered, B2CL, exports). It must tie to the sections:</p>
+          <div class="table-scroll g1-tbl" style="margin-bottom:1rem"><table class="data">
+            <thead><tr><th scope="col">Check</th><th class="num" scope="col">Sections</th><th class="num" scope="col">HSN table</th><th class="num" scope="col">Difference</th></tr></thead>
+            <tbody id="g1-recon"></tbody>
+          </table></div>
+          <div class="g1-tabs" role="tablist" aria-label="HSN table">
+            <button type="button" role="tab" data-hsn-tab="b2b" aria-selected="true">B2B · <span id="g1-hsn-b2b-n"></span></button>
+            <button type="button" role="tab" data-hsn-tab="b2c" aria-selected="false">B2C · <span id="g1-hsn-b2c-n"></span></button>
+          </div>
+          <div class="table-scroll g1-tbl g1-tbl--cap"><table class="data">
+            <thead><tr><th scope="col">HSN</th><th scope="col">Description</th><th scope="col">UQC</th><th class="num" scope="col">Qty</th><th class="num" scope="col">Rate</th><th class="num" scope="col">Taxable value</th><th class="num" scope="col">IGST</th><th class="num" scope="col">CGST</th><th class="num" scope="col">SGST</th><th class="num" scope="col">Cess</th></tr></thead>
+            <tbody id="g1-hsn"></tbody>
+          </table></div>
+
+          <h3 class="g1-h">Documents issued (Table 13)</h3>
+          <p class="g1-p">Document numbers are split into series (prefix + running number). <em>Gaps</em> are numbers missing inside a series’ range — usually documents of another type in a shared series, or cancelled documents.</p>
+          <div class="table-scroll g1-tbl g1-tbl--cap"><table class="data">
+            <thead><tr><th scope="col">Nature of document</th><th scope="col">Sr. No. from</th><th scope="col">Sr. No. to</th><th class="num" scope="col">Total</th><th class="num" scope="col">Cancelled</th><th class="num" scope="col">Net issued</th><th class="num" scope="col">Gaps</th></tr></thead>
+            <tbody id="g1-docs"></tbody>
+          </table></div>
+
+          <h3 class="g1-h">Validation checks</h3>
+          <p class="g1-p">Errors will be rejected by the offline tool or portal; checks and notes need a decision. Open a row for examples.</p>
+          <ul class="g1-issues" id="g1-issues"></ul>
+        </div>
+      </div>
+
+      <div style="margin-top:clamp(2rem,4vw,3rem);max-width:880px">
+        <div class="callout callout--warning" role="note">
+          <p class="callout__title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> A preparation aid, not a filing</p>
+          <p>The converter applies the reporting rules below to the data exactly as exported. It does not decide classification, rates, place of supply or whether a supply is taxable. Import the Excel into the GSTN offline tool (or upload the JSON) and review the portal summary before you file. Amendment tables (B2BA, CDNRA, B2CSA …) are not generated.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tint">
+    <div class="wrap wrap--mid">
+      <p class="eyebrow">Method</p>
+      <h2 class="h2">How each line is placed in GSTR-1</h2>
+      <div class="table-scroll" style="margin-top:clamp(1.5rem,3vw,2rem)"><table class="data g1-rules">
+        <thead><tr><th scope="col">Table / sheet</th><th scope="col">Rule applied to the Munim data</th></tr></thead>
+        <tbody>
+          <tr><td>4A, 4B, 6B, 6C · <code>b2b,sez,de</code></td><td>Invoices with a Billing GSTIN. One row per invoice per tax rate. Invoice Type maps to Regular B2B, SEZ with / without payment or Deemed export; Reverse Charge = Y only when flagged.</td></tr>
+          <tr><td>5 · <code>b2cl</code></td><td>Invoices with no GSTIN, inter-state (place of supply ≠ supplier state) and invoice value above the B2CL limit (₹1,00,000).</td></tr>
+          <tr><td>6A · <code>exp</code></td><td>Invoices with Type of Export EXPWP / EXPWOP (WPAY / WOPAY), or place of supply 96-Foreign Country. Port code and shipping bill are carried if present.</td></tr>
+          <tr><td>7 · <code>b2cs</code></td><td>All other unregistered invoices (intra-state of any value; inter-state up to the limit), consolidated by place of supply + rate (+ e-commerce GSTIN). Credit / debit notes to unregistered persons with UR Type blank or B2CS are netted here — the same treatment Munim applies.</td></tr>
+          <tr><td>8 · <code>exemp</code></td><td>Lines whose Item GST Type is Nil rated, Exempt or Non-GST, split into inter/intra-state and registered/unregistered.</td></tr>
+          <tr><td>9B · <code>cdnr</code></td><td>Credit and debit notes with a GSTIN (note type C / D), one row per note per rate.</td></tr>
+          <tr><td>9B · <code>cdnur</code></td><td>Notes to unregistered persons only where UR Type is B2CL, EXPWP or EXPWOP.</td></tr>
+          <tr><td>11A / 11B · <code>at</code>, <code>atadj</code></td><td>Document types Advance and Advance Adjustment, by place of supply and rate.</td></tr>
+          <tr><td>12 · <code>hsn(b2b)</code>, <code>hsn(b2c)</code></td><td>Every invoice and note line (excluding advances and Non-GST), credit notes negative, grouped by HSN + UQC + rate. Supplies to registered persons (B2B + CDNR) go to the B2B tab; unregistered (B2CL, B2CS, exports, CDNUR) to the B2C tab. Tax is computed per line (IGST if inter-state, else CGST + SGST). Services (SAC 99…) carry UQC “NA” with zero quantity.</td></tr>
+          <tr><td>13 · <code>docs</code></td><td>Each document number is split into prefix + running number; each series is reported with the lowest and highest number, the count of documents issued and the number cancelled. Invoices, credit notes and debit notes are reported separately.</td></tr>
+        </tbody>
+      </table></div>
+
+      <div style="margin-top:clamp(2rem,4vw,2.75rem)"><div class="acc">
+        <div class="acc__item">
+          <h3><button class="acc__btn" type="button" aria-expanded="false" aria-controls="g1-p-0" id="g1-b-0"><span>Which file should I use — the Excel or the JSON?</span><span class="acc__ind" aria-hidden="true"></span></button></h3>
+          <div class="acc__panel" id="g1-p-0" role="region" aria-labelledby="g1-b-0" data-open="false"><div><p>The Excel follows the GSTN <em>GSTR1_Excel_Workbook_Template V2.1</em> sheet by sheet. Import it into the GST Offline Tool (Import Files → Import Excel), review, and generate the JSON there. The JSON download skips that step: it is built in the GSTR-1 upload format and can be uploaded directly under Prepare Offline → Upload on the portal. It needs your GSTIN.</p></div></div>
+        </div>
+        <div class="acc__item">
+          <h3><button class="acc__btn" type="button" aria-expanded="false" aria-controls="g1-p-1" id="g1-b-1"><span>Why are some HSN or B2CS rows negative?</span><span class="acc__ind" aria-hidden="true"></span></button></h3>
+          <div class="acc__panel" id="g1-p-1" role="region" aria-labelledby="g1-b-1" data-open="false"><div><p>Credit notes issued this month for goods sold in earlier months reduce this month’s figures. Where returns for an HSN, or for a state and rate in B2CS, exceed this month’s sales, the net is negative. The converter flags each such row so you can decide whether to report it as is or adjust through an amendment of the original period.</p></div></div>
+        </div>
+        <div class="acc__item">
+          <h3><button class="acc__btn" type="button" aria-expanded="false" aria-controls="g1-p-2" id="g1-b-2"><span>Which Munim columns are used?</span><span class="acc__ind" aria-hidden="true"></span></button></h3>
+          <div class="acc__panel" id="g1-p-2" role="region" aria-labelledby="g1-b-2" data-open="false"><div><p>Columns are matched by their header text, so their order does not matter: Document Type Code, Invoice Date / No., Billing Name / GSTIN, CR./DB. Note Date / No., Place of Supply, Item Description, HSN / SAC, Quantity, Item Unit, Taxable Value, GST Rate, CESS Amount, Reverse Charge, Item GST Type, Invoice Type, UR Type, Type of Export, shipping details, Applicable % of Tax Rate, Total Transaction Value, Is Invoice Cancelled and Ecommerce GSTIN.</p></div></div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <script src="/assets/js/gstr1/ui.js?v=1" defer></script>
+</main>
+<footer class="ftr">
+    <div class="wrap">
+      <div class="ftr__top">
+        <div>
+          <div class="ftr__logo">
+            <picture>
+        <source type="image/webp" sizes="320px"
+                srcset="/assets/img/logo-lockup-400.webp 400w, /assets/img/logo-lockup-600.webp 600w, /assets/img/logo-lockup-800.webp 800w, /assets/img/logo-lockup-1100.webp 1100w">
+        <img src="/assets/img/logo-lockup-800.png"
+             srcset="/assets/img/logo-lockup-800.png 800w, /assets/img/logo-lockup-1100.png 1100w"
+             sizes="320px"
+             alt="Sawant & Kadrekar LLP, Chartered Accountants, a member firm of SNK & Alliance" width="800" height="181" loading="lazy">
+      </picture>
+          </div>
+          <p class="ftr__blurb">Sawant &amp; Kadrekar LLP is a firm of Chartered Accountants established in 1986, providing audit and assurance, taxation, regulatory and capital markets advisory, with a dedicated BFSI practice and an in-house technology solutions team.</p>
+        </div>
+        <div class="ftr__cols">
+          <div>
+            <h2>Explore</h2>
+            <ul class="ftr__navlist" style="--rows:6">
+            <li><a href="/about/">The Firm</a></li>
+            <li><a href="/partners/">Our Partners</a></li>
+            <li><a href="/team/">Our Team</a></li>
+            <li><a href="/offices/">Our Offices</a></li>
+            <li><a href="/careers/">Careers</a></li>
+            <li><a href="/services/">What We Do</a></li>
+            <li><a href="/industries/">Industries</a></li>
+            <li><a href="/insights/">All Insights</a></li>
+            <li><a href="/events/">Events</a></li>
+            <li><a href="/tools/">Tools &amp; Calculators</a></li>
+            <li><a href="/alumni/">Alumni</a></li>
+            <li><a href="/contact/">Contact Us</a></li>
+            </ul>
+          </div>
+          <div>
+            <h2>What we do</h2>
+            <ul>
+            <li><a href="/services/assurance-tax-advisory/">Assurance, Tax &amp; Advisory</a></li>
+            <li><a href="/services/capital-advisory/">Capital Advisory</a></li>
+            <li><a href="/services/value-added-services/">Value Added Services</a></li>
+            <li><a href="/services/staffing-supervision/">Staffing &amp; Supervision</a></li>
+            <li><a href="/services/banking-financial-services/">Banking &amp; Financial Services</a></li>
+            <li><a href="/services/technology-solutions/">Technology Solutions</a></li>
+            <li><a href="/services/">All services</a></li>
+            </ul>
+          </div>
+          <div>
+            <h2>Contact</h2>
+            <address>
+              Unit 12 &amp; 13, Radha Krishna Apartment<br>Building No. 2, 2nd Floor<br>Vachnalaya Marg, Dadar West<br>Mumbai, Maharashtra<br>400028<br>India
+            </address>
+            <ul style="margin-top:1rem">
+              <li><a href="tel:+918097453593">+91 80974 53593</a></li>
+              <li><a href="mailto:office@skcas.com">office@skcas.com</a></li>
+            
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="ftr__creds">
+        <p class="ftr__offices"><strong>Offices:</strong> Mumbai &middot; Virar &middot; Parel, Mumbai &middot; Navi Mumbai &middot; Thane &middot; Pune &nbsp;<a href="/offices/">All office addresses</a></p>
+      </div>
+
+      <div class="ftr__legal">
+        <p class="ftr__legalbody"><strong>Professional notice.</strong> This website is intended to provide general information about Sawant &amp; Kadrekar LLP. It is not, and must not be construed as, an advertisement, solicitation, invitation or inducement of any kind.
+        The content of this website is general information and is not professional advice. A professional relationship
+        arises only under a written engagement. <a href="/legal/disclaimer/">Read the full disclaimer</a>.</p>
+      </div>
+    </div>
+
+    <div class="ftr__bottom">
+      <div class="wrap ftr__bottominner">
+        <span>&copy; 2026 Sawant &amp; Kadrekar LLP. All rights reserved.</span>
+        <nav class="ftr__links" aria-label="Legal">
+          <a href="/legal/privacy/">Privacy Policy</a>
+          <a href="/legal/terms/">Terms of Use</a>
+          <a href="/legal/disclaimer/">Disclaimer</a>
+          <a href="/sitemap.xml">Sitemap</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/site.js?v=49e647f52b" defer></script>
+</body>
+</html>
