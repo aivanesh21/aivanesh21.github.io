@@ -430,7 +430,10 @@
       mergeNoteUnits: true,    // one row per HSN + rate: fold rows booked in other UQCs into the main unit
       gapsAsCancelled: false,  // Table 13: numbers missing inside a series are treated as cancelled
       hsnDesc: false,          // fill HSN description from item descriptions (otherwise left for the GSTN HSN master)
-      jsonVersion: 'GST3.2.3'
+      jsonVersion: 'GST3.2.3',
+      unregGstins: [],         // recipient GSTINs to report as unregistered (e.g. cancelled registrations)
+      hsnMap: {},              // { wrongHsn: correctHsn } corrections applied before aggregation
+      invalidHsn: []           // HSN codes the portal rejected (from an error report) — flagged until corrected
     };
   }
 
@@ -490,6 +493,10 @@
     var home = opt.homeState;
     var supplierGstin = str(opt.supplierGstin).toUpperCase();
     if (supplierGstin && /^\d{2}/.test(supplierGstin)) home = supplierGstin.slice(0, 2);
+    var unreg = {}, hsnMap = {}, invalidHsn = {};
+    (opt.unregGstins || []).forEach(function (g) { g = str(g).toUpperCase(); if (g) unreg[g] = 1; });
+    Object.keys(opt.hsnMap || {}).forEach(function (k) { var v = str(opt.hsnMap[k]).replace(/\s/g, ''); if (/^\d{4,8}$/.test(v)) hsnMap[str(k)] = v; });
+    (opt.invalidHsn || []).forEach(function (h) { invalidHsn[str(h)] = 1; });
 
     // ---- group lines into documents
     var docs = {}, order = [];
@@ -569,6 +576,10 @@
         if (d.posRaw) issues.add('error', 'posbad', 'Place of supply not recognised', ref + ': ' + d.posRaw);
         else issues.add('error', 'posmissing', 'Place of supply missing', ref);
       }
+      if (d.gstin && unreg[d.gstin]) {
+        issues.add('info', 'unreg', 'Recipient GSTIN marked as cancelled / unregistered under Corrections — reported as a B2C supply', ref + ': ' + d.gstin);
+        d.gstin = '';
+      }
       var registered = !!d.gstin;
       if (registered) {
         if (!gstinShapeOk(d.gstin) || (/^\d{2}[A-Z]{5}\d{4}/.test(d.gstin) && !gstinChecksumOk(d.gstin)))
@@ -615,6 +626,8 @@
       var anyTaxableLine = false;
       d.lines.forEach(function (L) {
         var hsn = str(L.hsn).replace(/\.0+$/, '').replace(/\s/g, '');
+        if (hsnMap[hsn]) { issues.add('info', 'hsnmapped', 'HSN corrected using your Corrections list', hsn + ' → ' + hsnMap[hsn]); hsn = hsnMap[hsn]; }
+        else if (invalidHsn[hsn]) issues.add('error', 'hsninvalid', 'HSN rejected by the GST portal as not valid — enter the correct code under Corrections', hsn);
         var rate = num(L.rate);
         var tx = num(L.txval), cess = num(L.cess), qty = num(L.qty);
         var gt = gstTypeCode(L.gstType);
@@ -665,12 +678,11 @@
 
       var itemList = Object.keys(items).map(function (k) { return items[k]; }).sort(function (a, b) { return a.rate - b.rate; });
       if (!itemList.length) {
-        if (!anyTaxableLine && d.lines.some(function (L) { return !gstTypeCode(L.gstType); }) && !(opt.zeroRateAsNil)) {
-          // all lines zero-valued: keep one zero line so the document is still reported
-          var r0 = num(d.lines[0].rate);
-          itemList = [Object.assign({ rate: r0 }, newAmt())];
-          issues.add('info', 'zerodoc', 'Document with zero taxable value — reported with a single ₹0 line', ref);
-        } else return; // fully nil/exempt: only Table 8 + HSN
+        // Fully nil/exempt documents live only in Table 8 + HSN. Zero-value documents are left out of the
+        // invoice/note tables: the portal rejects them ("Zero items added or added with zero value", RET191239).
+        if (!anyTaxableLine && sect !== 'B2CS' && sect !== 'B2CL?' && sect !== 'AT' && sect !== 'ATADJ' && d.lines.some(function (L) { return !gstTypeCode(L.gstType); }))
+          issues.add('warn', 'zerodoc', 'Zero-value document left out of ' + sect + ' — the portal rejects documents with zero value. It is still counted in Table 13 (documents issued).', ref);
+        return;
       }
 
       if (sect === 'B2CL?') sect = (val > opt.b2clLimit) ? 'B2CL' : 'B2CS';
@@ -1264,6 +1276,40 @@
     return lines.join('\r\n');
   }
 
+  /* Read a GST portal error report (returns_..._errorReport.zip or its .json) and pull out the
+     corrections the converter can apply. */
+  function parseErrorReport(u8, fileName) {
+    var text;
+    if (u8[0] === 0x50 && u8[1] === 0x4B) {
+      var files = fflate.unzipSync(u8);
+      var name = Object.keys(files).filter(function (n) { return /\.json$/i.test(n); })[0];
+      if (!name) throw new Error('No .json file inside the error report zip.');
+      text = decode(files[name]);
+    } else text = decode(u8);
+    var j = JSON.parse(text);
+    var er = j.error_report || j;
+    var out = { gstin: j.gstin || '', fp: j.fp || '', cancelled: [], invalidHsn: [], zeroDocs: [], other: [], total: 0 };
+    var seen = {};
+    function push(arr, v) { if (v && !seen[arr + v]) { seen[arr + v] = 1; out[arr].push(v); } }
+    Object.keys(er).forEach(function (sec) {
+      (er[sec] || []).forEach(function (e) {
+        var cd = e.error_cd || '', msg = e.error_msg || '';
+        if (!cd && !msg) return;
+        out.total++;
+        if (cd === 'RET191360' || /gstin.*cancel/i.test(msg)) push('cancelled', e.ctin);
+        else if (cd === 'RET191349' || /hsn.*not valid/i.test(msg)) {
+          ['hsn_b2b', 'hsn_b2c', 'data'].forEach(function (t) { (e[t] || []).forEach(function (h) { push('invalidHsn', h.hsn_sc); }); });
+        } else if (cd === 'RET191239' || /zero value/i.test(msg)) {
+          (e.nt || e.inv || []).forEach(function (n) { push('zeroDocs', n.nt_num || n.inum); });
+        } else {
+          var docsN = (e.nt || e.inv || []).map(function (n) { return n.nt_num || n.inum; }).filter(Boolean);
+          out.other.push({ section: sec, code: cd, msg: msg, refs: docsN.concat(e.ctin ? [e.ctin] : []) });
+        }
+      });
+    });
+    return out;
+  }
+
   function guessStateFromName(name) {
     var toks = String(name || '').toUpperCase().split(/[^A-Z0-9]+/);
     for (var i = toks.length - 1; i >= 0; i--) {
@@ -1278,7 +1324,7 @@
   var api = {
     loadSource: loadSource, build: build, buildJson: buildJson, splitJson: splitJson, buildExcel: buildExcel,
     issuesCsv: issuesCsv, defaultOptions: defaultOptions, STATES: STATES, RATES: RATES, posLabel: posLabel,
-    gstinChecksumOk: gstinChecksumOk, guessStateFromName: guessStateFromName, _parseDate: parseDate, _openXlsx: openXlsx
+    gstinChecksumOk: gstinChecksumOk, guessStateFromName: guessStateFromName, parseErrorReport: parseErrorReport, _parseDate: parseDate, _openXlsx: openXlsx
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.GSTR1 = api;

@@ -50,6 +50,8 @@
   var fGstin = $('g1-gstin'), fState = $('g1-state'), fMonth = $('g1-month'), fYear = $('g1-year');
   var fLimit = $('g1-limit'), fZero = $('g1-zero'), fQty = $('g1-qty'), fMerge = $('g1-merge'), fGaps = $('g1-gaps'), fDesc = $('g1-desc'), fVer = $('g1-ver');
   var out = $('g1-out');
+  var fErr = $('g1-err'), fHsnMap = $('g1-hsnmap'), fUnreg = $('g1-unreg'), errSum = $('g1-err-sum'), hsnHelp = $('g1-hsnhelp');
+  var invalidHsn = [];
   var fileName = '', loaded = false, lastView = null;
 
   fState.innerHTML = '<option value="">Select state…</option>' + STATES.map(function (s) { return '<option value="' + s[0] + '">' + s[0] + ' – ' + esc(s[1]) + '</option>'; }).join('');
@@ -87,9 +89,95 @@
       period: fMonth.value + fYear.value,
       b2clLimit: +fLimit.value || 100000,
       zeroRateAsNil: fZero.checked, reduceQtyOnCN: fQty.checked, mergeNoteUnits: fMerge.checked,
-      gapsAsCancelled: fGaps.checked, hsnDesc: fDesc.checked, jsonVersion: fVer.value.trim() || 'GST3.2.3'
+      gapsAsCancelled: fGaps.checked, hsnDesc: fDesc.checked, jsonVersion: fVer.value.trim() || 'GST3.2.3',
+      hsnMap: parseHsnMap(), unregGstins: parseUnreg(), invalidHsn: invalidHsn
     };
   }
+
+  /* ---------- corrections (portal error report, HSN map, cancelled GSTINs) ---------- */
+  var STORE = 'g1-corrections-v1';
+  function parseHsnMap() {
+    var m = {};
+    fHsnMap.value.split(/\n/).forEach(function (l) {
+      var x = /^\s*(\d{4,8})\s*(?:=|->|→|,|;|\s)\s*(\d{4,8})?\s*$/.exec(l);
+      if (x && x[2]) m[x[1]] = x[2];
+    });
+    return m;
+  }
+  function parseUnreg() {
+    return fUnreg.value.toUpperCase().split(/[\s,;]+/).filter(function (g) { return /^[0-9A-Z]{15}$/.test(g); });
+  }
+  function saveCorr() {
+    try { localStorage.setItem(STORE, JSON.stringify({ hsnmap: fHsnMap.value, unreg: fUnreg.value, invalid: invalidHsn })); } catch (e) { /* storage unavailable */ }
+    updateCorrBadge();
+  }
+  function loadCorr() {
+    try {
+      var c = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (c) { fHsnMap.value = c.hsnmap || ''; fUnreg.value = c.unreg || ''; invalidHsn = c.invalid || []; }
+    } catch (e) { /* ignore */ }
+    updateCorrBadge();
+  }
+  function pendingHsn() { var m = parseHsnMap(); return invalidHsn.filter(function (h) { return !m[h]; }); }
+  function updateCorrBadge() {
+    var n = pendingHsn().length;
+    $('g1-corr-n').textContent = n ? n + ' HSN to fix' : '';
+  }
+  function addLines(ta, lines) {
+    var have = {};
+    ta.value.split(/\n/).forEach(function (l) { var k = l.split(/[=\s,;]/)[0].trim().toUpperCase(); if (k) have[k] = 1; });
+    var add = lines.filter(function (l) { return !have[l.split(/[=\s]/)[0].trim().toUpperCase()]; });
+    if (add.length) ta.value = (ta.value.replace(/\s+$/, '') + (ta.value.trim() ? '\n' : '') + add.join('\n')).replace(/^\n/, '');
+    return add.length;
+  }
+  function renderHsnHelp() {
+    var codes = invalidHsn.slice();
+    if (!codes.length || !loaded) { hsnHelp.innerHTML = ''; return; }
+    call('hsninfo', { codes: codes }).then(function (r) {
+      var m = parseHsnMap();
+      hsnHelp.innerHTML = '<div class="table-scroll g1-tbl g1-hsnfix"><table class="data"><thead><tr><th scope="col">Rejected HSN</th><th scope="col">Products in your data</th><th class="num" scope="col">Lines</th><th class="num" scope="col">Value (₹)</th><th scope="col">Correct HSN</th></tr></thead><tbody>' +
+        r.info.map(function (o) {
+          return '<tr><td class="g1-mono">' + esc(o.code) + '</td><td>' + (o.descs.map(esc).join('<br>') || '<span class="g1-muted">not in this file</span>') + '</td><td class="num">' + o.lines + '</td><td class="num">' + money(o.value) +
+            '</td><td><input class="input" inputmode="numeric" maxlength="8" data-fix="' + esc(o.code) + '" value="' + esc(m[o.code] || '') + '" aria-label="Correct HSN for ' + esc(o.code) + '" placeholder="8 digits"></td></tr>';
+        }).join('') + '</tbody></table></div>';
+      Array.prototype.forEach.call(hsnHelp.querySelectorAll('[data-fix]'), function (inp) {
+        inp.addEventListener('change', function () {
+          var code = inp.getAttribute('data-fix'), v = inp.value.replace(/\D/g, '');
+          var lines = fHsnMap.value.split(/\n/).filter(function (l) { return l.trim() && l.split(/[=\s,;]/)[0].trim() !== code; });
+          lines.push(code + ' = ' + v);
+          fHsnMap.value = lines.join('\n');
+          saveCorr(); schedule();
+        });
+      });
+    });
+  }
+  fErr.addEventListener('change', function () {
+    var f = fErr.files[0];
+    if (!f) return;
+    f.arrayBuffer().then(function (buf) { return call('errreport', { buf: buf, name: f.name }, [buf]); }).then(function (r) {
+      var rep = r.report;
+      var nU = addLines(fUnreg, rep.cancelled);
+      rep.invalidHsn.forEach(function (h) { if (invalidHsn.indexOf(h) < 0) invalidHsn.push(h); });
+      var parts = [];
+      parts.push('<strong>Error report loaded</strong> (' + fmtInt.format(rep.total) + ' rejected records' + (rep.fp ? ', period ' + esc(rep.fp.slice(0, 2) + '/' + rep.fp.slice(2)) : '') + ').');
+      if (rep.cancelled.length) parts.push(rep.cancelled.length + ' cancelled GSTIN' + (rep.cancelled.length > 1 ? 's' : '') + ' → now reported as B2C' + (nU < rep.cancelled.length ? ' (' + (rep.cancelled.length - nU) + ' already listed)' : '') + '.');
+      if (rep.zeroDocs.length) parts.push(rep.zeroDocs.length + ' zero-value document' + (rep.zeroDocs.length > 1 ? 's' : '') + ' → left out automatically (still counted in Table 13).');
+      if (rep.invalidHsn.length) parts.push(rep.invalidHsn.length + ' invalid HSN code' + (rep.invalidHsn.length > 1 ? 's' : '') + ' → enter the correct code for each in the table below.');
+      rep.other.forEach(function (o) { parts.push('Not handled automatically — ' + esc(o.section) + ' ' + esc(o.code) + ': ' + esc(o.msg) + (o.refs.length ? ' (' + o.refs.slice(0, 5).map(esc).join(', ') + ')' : '')); });
+      errSum.setAttribute('data-state', rep.invalidHsn.length || rep.other.length ? 'info' : 'ok');
+      errSum.innerHTML = parts.join('<br>');
+      if (rep.gstin && !fGstin.value.trim()) { fGstin.value = rep.gstin; gstinState(); }
+      $('g1-corr').open = true;
+      saveCorr(); renderHsnHelp(); schedule();
+    }).catch(function (e) { errSum.setAttribute('data-state', 'err'); errSum.textContent = 'Could not read the error report: ' + e.message; });
+    fErr.value = '';
+  });
+  [fHsnMap, fUnreg].forEach(function (ta) { ta.addEventListener('change', function () { saveCorr(); renderHsnHelp(); schedule(); }); });
+  $('g1-corr-clear').addEventListener('click', function () {
+    fHsnMap.value = ''; fUnreg.value = ''; invalidHsn = []; errSum.innerHTML = ''; errSum.removeAttribute('data-state');
+    saveCorr(); renderHsnHelp(); schedule();
+  });
+  loadCorr();
 
   /* ---------- file loading ---------- */
   function handleFile(file) {
@@ -106,6 +194,7 @@
       $('g1-filemeta').innerHTML = '<strong>' + esc(fileName) + '</strong> · sheet “' + esc(info.sheet) + '” · ' + fmtInt.format(info.lines) + ' lines · header on row ' + info.headerRow;
       drop.classList.add('is-loaded');
       if (!fState.value && info.guessState) fState.value = info.guessState;
+      renderHsnHelp();
       return run(true);
     }).catch(function (err) {
       setStatus('err', '<strong>Could not read the file.</strong> ' + esc(err.message));

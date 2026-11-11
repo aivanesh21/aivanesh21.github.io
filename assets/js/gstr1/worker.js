@@ -1,7 +1,7 @@
 /* GSTR-1 Converter — Web Worker wrapper around engine.js.
    Keeps the parsed source and the last result in memory so settings can be re-applied quickly. */
 /* global GSTR1, importScripts */
-if (typeof GSTR1 === 'undefined') importScripts('../vendor/fflate-0.8.2.min.js', 'engine.js?v=2');
+if (typeof GSTR1 === 'undefined') importScripts('../vendor/fflate-0.8.2.min.js', 'engine.js?v=3');
 
 var src = null, res = null;
 
@@ -31,6 +31,23 @@ self.onmessage = function (e) {
     } else if (m.cmd === 'json') {
       var parts = GSTR1.splitJson(GSTR1.buildJson(res), m.maxBytes).map(function (p) { return JSON.stringify(p); });
       self.postMessage({ id: id, ok: true, parts: parts });
+    } else if (m.cmd === 'errreport') {
+      self.postMessage({ id: id, ok: true, report: GSTR1.parseErrorReport(new Uint8Array(m.buf), m.name) });
+    } else if (m.cmd === 'hsninfo') {
+      var want = {}, info = {};
+      (m.codes || []).forEach(function (c) { want[c] = 1; info[c] = { code: c, lines: 0, value: 0, reg: 0, unreg: 0, descs: {} }; });
+      (src ? src.lines : []).forEach(function (L) {
+        var h = String(L.hsn == null ? '' : L.hsn).replace(/\.0+$/, '').replace(/\s/g, '');
+        if (!want[h]) return;
+        var o = info[h], tx = +L.txval || 0, ds = String(L.desc || '').trim();
+        o.lines++; o.value += Math.abs(tx); if (L.gstin) o.reg++; else o.unreg++;
+        if (ds) o.descs[ds] = (o.descs[ds] || 0) + 1;
+      });
+      self.postMessage({ id: id, ok: true, info: Object.keys(info).map(function (k) {
+        var o = info[k];
+        o.descs = Object.keys(o.descs).sort(function (x, y) { return o.descs[y] - o.descs[x]; }).slice(0, 3);
+        return o;
+      }) });
     } else if (m.cmd === 'csv') {
       self.postMessage({ id: id, ok: true, text: GSTR1.issuesCsv(res) });
     }

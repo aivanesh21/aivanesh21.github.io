@@ -710,6 +710,17 @@
   .g1-rules td, .g1-rules th { white-space: normal !important; }
   .g1-rules td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap !important; }
   #g1-status:empty { display: none; }
+  #g1-err-sum:empty { display: none; }
+  .g1-filebtn { position: relative; cursor: pointer; }
+  .g1-filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+  .g1-corr-grid { display: grid; gap: 0 1.5rem; margin-top: 1.25rem; }
+  @media (min-width: 820px) { .g1-corr-grid { grid-template-columns: 1fr 1fr; } }
+  .g1-corr-grid .textarea { min-height: 150px; font-size: .875rem; }
+  .g1-corr-n { display: inline-block; margin-left: .35rem; padding: 0 .45rem; border-radius: 999px; background: var(--err-bg); color: var(--err); font-size: .75rem; }
+  .g1-corr-n:empty { display: none; }
+  .g1-hsnfix { margin-top: 1rem; }
+  .g1-hsnfix td { white-space: normal !important; vertical-align: middle; }
+  .g1-hsnfix input { width: 9.5rem; min-height: 38px; padding: .4rem .6rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 </style>
 
   <section class="section section--tight pagehead">
@@ -734,7 +745,7 @@
   </section>
 
   <section class="section--tight" style="padding-bottom:clamp(3rem,6vw,5rem)">
-    <div class="wrap" id="g1" data-worker="/assets/js/gstr1/worker.js?v=2">
+    <div class="wrap" id="g1" data-worker="/assets/js/gstr1/worker.js?v=3">
 
       <div style="max-width:880px;margin-bottom:clamp(1.5rem,3vw,2.25rem)"><div class="callout" role="note">
         <p class="callout__title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Your data stays on your computer</p>
@@ -793,6 +804,26 @@
               <label class="check"><input type="checkbox" id="g1-desc"><span><strong>Fill HSN description from item descriptions</strong> (Excel and JSON). Leave off: the offline tool and portal take the description from the GSTN HSN master.</span></label>
               <div class="field" style="margin-top:.25rem"><label class="field__label" for="g1-ver">JSON version tag</label><input class="input" id="g1-ver" value="GST3.2.3" style="max-width:220px"></div>
             </div>
+          </details>
+          <details class="g1-adv" id="g1-corr">
+            <summary>Corrections from a portal error report <span class="g1-corr-n" id="g1-corr-n"></span></summary>
+            <p class="g1-p">After an upload, the GST portal gives an error report (<code>returns_…_errorReport.zip</code>). Load it here: cancelled GSTINs are moved to B2C automatically, zero-value documents are already left out, and HSN codes the portal rejected are listed below for you to correct. Corrections are remembered in this browser for next month.</p>
+            <label class="btn btn--ghost btn--sm g1-filebtn">Load portal error report (.zip / .json)<input type="file" id="g1-err" accept=".zip,.json"></label>
+            <div class="formstatus" id="g1-err-sum" role="status" aria-live="polite"></div>
+            <div id="g1-hsnhelp"></div>
+            <div class="g1-corr-grid">
+              <div class="field">
+                <label class="field__label" for="g1-hsnmap">HSN corrections</label>
+                <textarea class="textarea g1-mono" id="g1-hsnmap" spellcheck="false" placeholder="85081190 = 85081100" aria-describedby="g1-hsnmap-help"></textarea>
+                <span class="field__help" id="g1-hsnmap-help">One per line: <em>wrong code = correct code</em>. Applied to every line before the HSN summary is built. Correcting the Munim item master is the lasting fix.</span>
+              </div>
+              <div class="field">
+                <label class="field__label" for="g1-unreg">GSTINs to report as unregistered</label>
+                <textarea class="textarea g1-mono" id="g1-unreg" spellcheck="false" placeholder="33FBFPS0689G1ZD" aria-describedby="g1-unreg-help"></textarea>
+                <span class="field__help" id="g1-unreg-help">One per line. For registrations the portal reports as cancelled (RET191360): those sales move to B2CS / B2CL and their HSN to the B2C table.</span>
+              </div>
+            </div>
+            <button class="btn btn--ghost btn--sm" type="button" id="g1-corr-clear">Clear corrections</button>
           </details>
         </div>
 
@@ -894,7 +925,7 @@
     </div>
   </section>
 
-  <script src="/assets/js/gstr1/ui.js?v=2" defer></script>
+  <script src="/assets/js/gstr1/ui.js?v=3" defer></script>
 </main>
 <footer class="ftr">
     <div class="wrap">
